@@ -5,17 +5,22 @@ import { useActiveSection } from "@/hooks/useActiveSection";
 import HeroImage from "@/components/hero/HeroImage";
 import HeroText from "@/components/hero/HeroText";
 import AboutSection from "@/components/about/AboutSection";
+import ExperienceSection from "@/components/experience/ExperienceSection";
+import BackgroundAnimation from "@/components/background/BackgroundAnimation";
 
 export default function Page() {
-  const activeSection = useActiveSection(["home", "about"]);
+  const activeSection = useActiveSection(["home", "about", "experience"]);
 
   const navItems = [
     { id: "home", label: "Home" },
     { id: "about", label: "About" },
+    { id: "experience", label: "Journey" },
   ];
 
   return (
     <div className="relative min-h-screen bg-[#030712] text-white overflow-x-hidden selection:bg-blue-600 selection:text-white">
+      <BackgroundAnimation />
+
       <header className="fixed top-0 left-0 right-0 z-50 bg-[#030712]/60 backdrop-blur-md border-b border-white/5 transition-all duration-300">
         <div className="container mx-auto px-6 h-20 flex items-center justify-between">
           <div className="text-lg font-bold tracking-tight text-white flex items-center gap-1 cursor-pointer select-none">
@@ -56,13 +61,17 @@ export default function Page() {
         </div>
       </header>
 
-      <section id="home" className="container mx-auto px-6 min-h-screen flex flex-col md:flex-row items-center justify-center gap-12 md:gap-24 pt-24 pb-12">
+      <section id="home" className="relative z-10 container mx-auto px-6 min-h-screen flex flex-col md:flex-row items-center justify-center gap-12 md:gap-24 pt-24 pb-12">
         <HeroImage />
         <HeroText />
       </section>
 
-      <div id="about">
+      <div id="about" className="relative z-10">
         <AboutSection />
+      </div>
+
+      <div id="experience" className="relative z-10">
+        <ExperienceSection />
       </div>
 
       <div className="fixed bottom-0 left-0 right-0 bg-[#030712]/90 backdrop-blur-sm border-t border-white/5 py-4 z-40">

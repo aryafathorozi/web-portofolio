@@ -8,17 +8,43 @@ export default function HeroText() {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      transition: { staggerChildren: 0.15, delayChildren: 0.2 },
+      transition: { staggerChildren: 0.08, delayChildren: 0.2 },
     },
   };
 
   const itemVariants: Variants = {
-    hidden: { opacity: 0, y: 30 },
+    hidden: { opacity: 0, y: 20 },
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.6, ease: "easeOut" },
+      transition: { duration: 0.5, ease: "easeOut" },
     },
+  };
+
+  const renderInteractiveText = (text: string, baseColorClass: string) => {
+    return text.split("").map((char, index) => {
+      if (char === " ") return <span key={index}>&nbsp;</span>;
+
+      return (
+        <motion.span
+          key={index}
+          className={`inline-block cursor-default select-none transition-all duration-300 ease-out ${baseColorClass} 
+            hover:text-white hover:scale-110`}
+          style={{
+            transformOrigin: "center font-baseline",
+          }}
+          whileHover={{
+            textShadow: [
+              "0 0 4px rgba(34, 211, 238, 0.8)", // Cyan (Sharp)
+              "0 0 12px rgba(147, 51, 234, 0.6)", // Purple (Medium)
+              "0 0 20px rgba(37, 99, 235, 0.4)", // Blue (Wide)
+            ].join(", "),
+          }}
+        >
+          {char}
+        </motion.span>
+      );
+    });
   };
 
   return (
@@ -27,12 +53,10 @@ export default function HeroText() {
         I&apos;M // FULLSTACK WEB DEVELOPER
       </motion.p>
 
-      <motion.h1 variants={itemVariants} className="text-5xl md:text-7xl font-extrabold tracking-tighter leading-[1.1] text-white mb-6">
-        <span className="text-gray-500">MUHAMMAD</span>
-        <br />
-        <span className="text-gray-300">ARYA</span>
-        <br />
-        <span className="bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-transparent">FATHOROZI</span>
+      <motion.h1 variants={itemVariants} className="text-5xl md:text-7xl font-extrabold tracking-tight leading-[1.1] mb-6 whitespace-nowrap">
+        <div className="block">{renderInteractiveText("MUHAMMAD", "text-gray-500")}</div>
+        <div className="block">{renderInteractiveText("ARYA", "text-gray-300")}</div>
+        <div className="block">{renderInteractiveText("FATHOROZI", "bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-transparent hover:bg-none")}</div>
       </motion.h1>
 
       <motion.p variants={itemVariants} className="text-base md:text-lg text-gray-400 mb-10 max-w-xl mx-auto md:mx-0 leading-relaxed">
