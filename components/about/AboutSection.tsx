@@ -14,9 +14,9 @@ export default function AboutSection() {
         transition={{ duration: 0.6 }}
         className="mb-12"
       >
-        <p className="font-mono text-xs text-blue-500 uppercase tracking-[.3em] mb-2">02 // ABOUT ME</p>
+        <p className="font-mono text-xs text-blue-500 uppercase tracking-[.3em] mb-2">01 // ABOUT ME</p>
         <h2 className="text-4xl md:text-5xl font-extrabold tracking-tighter text-white">
-          ABOUT <span className="text-gray-500">ME</span>
+          ABOUT <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">ME</span>
         </h2>
       </motion.div>
 

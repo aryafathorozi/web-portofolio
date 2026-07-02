@@ -6,15 +6,19 @@ import HeroImage from "@/components/hero/HeroImage";
 import HeroText from "@/components/hero/HeroText";
 import AboutSection from "@/components/about/AboutSection";
 import ExperienceSection from "@/components/experience/ExperienceSection";
+import TechStackSection from "@/components/techstack/TechStackSection";
+import ProjectsSection from "@/components/project/ProjectsSection";
 import BackgroundAnimation from "@/components/background/BackgroundAnimation";
 
 export default function Page() {
-  const activeSection = useActiveSection(["home", "about", "experience"]);
+  const activeSection = useActiveSection(["home", "about", "experience", "techstack", "project"]);
 
   const navItems = [
     { id: "home", label: "Home" },
     { id: "about", label: "About" },
     { id: "experience", label: "Journey" },
+    { id: "techstack", label: "Tech Stack" },
+    { id: "project", label: "Project" },
   ];
 
   return (
@@ -72,6 +76,14 @@ export default function Page() {
 
       <div id="experience" className="relative z-10">
         <ExperienceSection />
+      </div>
+
+      <div id="techstack" className="relative z-10">
+        <TechStackSection />
+      </div>
+
+      <div id="project" className="relative z-10">
+        <ProjectsSection />
       </div>
 
       <div className="fixed bottom-0 left-0 right-0 bg-[#030712]/90 backdrop-blur-sm border-t border-white/5 py-4 z-40">

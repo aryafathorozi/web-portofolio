@@ -73,8 +73,8 @@ export default function ExperienceSection() {
     <section id="experience" className="container mx-auto px-6 py-24 relative z-10">
       <div className="mb-16">
         <span className="text-blue-500 font-mono text-xs tracking-widest uppercase block mb-2">02 / Journey</span>
-        <h2 className="text-2xl md:text-4xl font-bold tracking-tight uppercase text-gray-400">
-          Professional <span className="text-white">Experience</span>
+        <h2 className="text-4xl md:text-5xl font-extrabold tracking-tighter text-white uppercase">
+          Professional <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">Experience</span>
         </h2>
       </div>
 
