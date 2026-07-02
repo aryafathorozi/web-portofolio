@@ -9,16 +9,18 @@ import ExperienceSection from "@/components/experience/ExperienceSection";
 import TechStackSection from "@/components/techstack/TechStackSection";
 import ProjectsSection from "@/components/project/ProjectsSection";
 import BackgroundAnimation from "@/components/background/BackgroundAnimation";
+import CertificationSection from "@/components/certification/CertificationSection";
 
 export default function Page() {
-  const activeSection = useActiveSection(["home", "about", "experience", "techstack", "project"]);
+  const activeSection = useActiveSection(["home", "about", "experience", "techstack", "project", "certification"]);
 
   const navItems = [
     { id: "home", label: "Home" },
     { id: "about", label: "About" },
-    { id: "experience", label: "Journey" },
+    { id: "experience", label: "Experience" },
     { id: "techstack", label: "Tech Stack" },
     { id: "project", label: "Project" },
+    { id: "certification", label: "Certification" },
   ];
 
   return (
@@ -84,6 +86,10 @@ export default function Page() {
 
       <div id="project" className="relative z-10">
         <ProjectsSection />
+      </div>
+
+      <div id="certification" className="relative z-10">
+        <CertificationSection />
       </div>
 
       <div className="fixed bottom-0 left-0 right-0 bg-[#030712]/90 backdrop-blur-sm border-t border-white/5 py-4 z-40">

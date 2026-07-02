@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, Variants } from "framer-motion";
-import { SiJavascript, SiNextdotjs, SiTailwindcss, SiBootstrap, SiPhp, SiPostgresql, SiMysql, SiFirebase, SiFigma, SiGit } from "react-icons/si";
+import { SiJavascript, SiNextdotjs, SiTailwindcss, SiBootstrap, SiLaravel, SiPhp, SiPostgresql, SiMysql, SiFirebase, SiFigma, SiGit } from "react-icons/si";
 
 interface TechItem {
   name: string;
@@ -19,6 +19,7 @@ export default function TechStackSection() {
   ];
 
   const row2: TechItem[] = [
+    { name: "LARAVEL", icon: SiLaravel, colorClass: "group-hover:text-red-500" },
     { name: "PHP", icon: SiPhp, colorClass: "group-hover:text-indigo-400" },
     { name: "POSTGRESQL", icon: SiPostgresql, colorClass: "group-hover:text-blue-400" },
     { name: "MYSQL", icon: SiMysql, colorClass: "group-hover:text-amber-500" },
@@ -41,7 +42,7 @@ export default function TechStackSection() {
   });
 
   return (
-    <section id="tech-stack" className="py-24 relative overflow-hidden z-10 w-full bg-gradient-to-b from-transparent via-[#030712]/40 to-transparent">
+    <section id="techstack" className="py-24 relative overflow-hidden z-10 w-full bg-gradient-to-b from-transparent via-[#030712]/40 to-transparent">
       <div className="container mx-auto px-6 mb-16 text-center">
         <span className="text-blue-500 font-mono text-xs tracking-widest uppercase block mb-3">03 / Tech Stack</span>
         <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight uppercase text-white mb-4">

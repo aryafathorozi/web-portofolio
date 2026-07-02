@@ -36,8 +36,8 @@ export default function ProjectCard({ project, index, currentIndex, totalProject
 
   const isActive = offset === 0;
 
-  const xPosition = offset * 280;
-  const rotateY = offset * -35;
+  const xPosition = offset * 360;
+  const rotateY = offset * -22;
   const zPosition = isActive ? 0 : -200;
 
   const smoothBezier = [0.25, 1, 0.5, 1] as const;
