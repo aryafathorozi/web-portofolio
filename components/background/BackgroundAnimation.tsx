@@ -32,7 +32,7 @@ export default function BackgroundAnimation() {
         {codeSnippets.map((snippet, index) => {
           const randomLeft = `${(index * 9) % 100}%`;
           const randomTop = `${(index * 7 + 10) % 90}%`;
-          const randomDuration = 15 + (index % 5) * 5; 
+          const randomDuration = 15 + (index % 5) * 5;
 
           return (
             <motion.div

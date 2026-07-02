@@ -78,9 +78,9 @@ export default function ProjectsSection() {
   };
 
   return (
-    <section id="portfolio" className="container mx-auto px-4 py-24 relative z-10 overflow-hidden">
+    <section id="project" className="container mx-auto px-4 py-24 relative z-10 overflow-hidden">
       <div className="mb-16 text-center">
-        <span className="text-blue-500 font-mono text-xs tracking-widest uppercase block mb-2">04 / Portfolio</span>
+        <span className="text-blue-500 font-mono text-xs tracking-widest uppercase block mb-2">04 / Portofolio</span>
         <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight uppercase text-white">
           Featured <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">Projects</span>
         </h2>
@@ -89,7 +89,7 @@ export default function ProjectsSection() {
         </p>
       </div>
 
-      <div className="relative max-w-5xl mx-auto flex items-center justify-center h-[520px]" style={{ perspective: "1200px" }}>
+      <div className="relative max-w-7xl mx-auto flex items-center justify-center h-[520px]" style={{ perspective: "1200px" }}>
         <button
           onClick={handlePrev}
           className="absolute left-2 md:left-8 z-40 p-3 rounded-full bg-[#081122]/80 border border-white/5 text-gray-400 hover:text-cyan-400 hover:border-cyan-500/30 backdrop-blur-md transition-all duration-300 group shadow-xl"
