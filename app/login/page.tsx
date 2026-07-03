@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { KeyRound, Mail, ArrowRight } from "lucide-react";
-import BackgroundAuth from "@/components/admin/BackgroundAuth"; // Sesuaikan alias path '@/' proyek Anda
+import BackgroundAuth from "@/components/admin/BackgroundAuth";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -12,7 +12,6 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Di Sini Tempat Mengaitkan Backend (Supabase Auth / API Endpoint Anda)
     try {
       console.log("Submitting login info:", { email, password, rememberMe });
     } catch (error) {
@@ -22,10 +21,8 @@ export default function LoginPage() {
 
   return (
     <div className="relative min-h-screen w-full bg-[#030712] flex items-center justify-center p-4 overflow-hidden select-none">
-      {/* Panggil Komponen Latar Belakang */}
       <BackgroundAuth />
 
-      {/* CORE AUTHORIZATION CARD */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -37,7 +34,6 @@ export default function LoginPage() {
       >
         <div className="absolute inset-0 rounded-3xl bg-gradient-to-b from-cyan-500/10 to-purple-500/10 opacity-50 group-hover/card:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
-        {/* Header Title */}
         <div className="text-center mb-8 relative z-10">
           <h1 className="font-sans text-2xl font-black tracking-widest text-white uppercase">
             KAMN.<span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">DANU</span>
@@ -45,7 +41,6 @@ export default function LoginPage() {
           <p className="font-mono text-[10px] tracking-[0.2em] text-gray-400 uppercase mt-1.5">Admin Authorization</p>
         </div>
 
-        {/* Input Form Fields */}
         <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
           <div className="space-y-2">
             <label className="block font-mono text-[11px] tracking-wider text-gray-400 uppercase">Username / Email</label>

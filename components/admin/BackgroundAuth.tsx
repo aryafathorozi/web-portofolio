@@ -45,14 +45,11 @@ export default function BackgroundAuth() {
 
   return (
     <>
-      {/* Layer Tech Grid */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff02_1px,transparent_1px),linear-gradient(to_bottom,#ffffff02_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-70 pointer-events-none z-0" />
 
-      {/* Pendaran Cahaya Ambient */}
       <div className="absolute top-[-10%] left-[-10%] w-[50rem] h-[50rem] rounded-full bg-cyan-500/[0.03] blur-[120px] pointer-events-none z-0" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[45rem] h-[45rem] rounded-full bg-purple-500/[0.03] blur-[140px] pointer-events-none z-0" />
 
-      {/* Render Semua Ikon yang Mengitari Card */}
       {backgroundIcons.map((iconProps, index) => (
         <FloatingIcon key={index} {...iconProps} />
       ))}
