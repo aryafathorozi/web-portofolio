@@ -10,3 +10,13 @@ export interface ProjectEntity {
     status: string;
     created_at?: string;
 }
+
+export interface ExperienceEntity {
+    id?: string;
+    role: string;
+    periode: string;
+    year_background?: string;
+    description: string;
+    tech_stack: string[] | any[] | null;
+    created_at?: string;
+}
