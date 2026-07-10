@@ -52,8 +52,8 @@ export default function ProjectDetailModal({ project, onClose }: ProjectModalPro
             src={project.image_src || "/placeholder-project.png"}
             alt={project.title}
             fill
-            sizes="(max-w-1024px) 100vw, 55vw"
-            className="object-cover opacity-85 hover:scale-[1.02] transition-transform duration-1000 ease-out"
+            sizes="(max-width: 1024px) 100vw, 55vw"
+            className="object-cover opacity-100 hover:scale-[1.02] transition-transform duration-1000 ease-out"
             priority
           />
 

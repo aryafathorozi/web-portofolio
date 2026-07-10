@@ -2,7 +2,7 @@ import { Search, Bell, Grid } from "lucide-react";
 
 export default function Header() {
   return (
-    <header className="h-20 border-b border-white/5 bg-[#030712]/40 backdrop-blur-md px-6 md:px-8 flex items-center justify-between sticky top-0 z-10">
+    <header className="h-20 border-b border-white/5 bg-[#030712]/90 backdrop-blur-md px-6 md:px-8 flex items-center justify-between sticky top-0 z-50">
       <div className="relative w-full max-w-md group">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-cyan-400 transition-colors" size={16} />
         <input

@@ -47,7 +47,7 @@ export default function AdminProjectsPage() {
     fetchProjects();
   }, []);
 
-  const visibleProjects = isExpanded ? projects : projects.slice(0, 3);
+  const visibleProjects = isExpanded ? projects : projects.slice(0, 2);
 
   const openDetailModal = (project: ProjectEntity) => {
     setSelectedProject(project);
@@ -97,9 +97,7 @@ export default function AdminProjectsPage() {
             <Layers className="text-purple-400" size={18} />
             <h4 className="font-mono text-xs uppercase tracking-widest text-white font-bold">Project Repositories</h4>
           </div>
-          <span className="font-mono text-[10px] text-gray-500">
-            {loading ? "Scanning core sync..." : `Showing ${visibleProjects.length} of ${projects.length} artifacts`}
-          </span>
+          <span className="font-mono text-[10px] text-gray-500">{loading ? "Scanning core sync..." : `Showing ${visibleProjects.length} of ${projects.length} artifacts`}</span>
         </div>
 
         {loading ? (
@@ -117,12 +115,45 @@ export default function AdminProjectsPage() {
                   <div className="space-y-2">
                     <div className="flex items-center gap-3">
                       <span className="font-mono text-[9px] px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 tracking-wider font-bold uppercase">{project.category}</span>
-                      {project.status && (
-                        <span className="font-mono text-[9px] text-gray-500 flex items-center gap-1">
-                          <span className="w-1 h-1 rounded-full bg-gray-500" />
-                          {project.status}
-                        </span>
-                      )}
+                      {project.status &&
+                        (() => {
+                          const statusConfig: Record<string, { text: string; bg: string; border: string; dot: string }> = {
+                            completed: {
+                              text: "text-emerald-400",
+                              bg: "bg-emerald-500/10",
+                              border: "border-emerald-500/20",
+                              dot: "bg-emerald-400",
+                            },
+                            production: {
+                              text: "text-cyan-400",
+                              bg: "bg-cyan-500/10",
+                              border: "border-cyan-500/20",
+                              dot: "bg-cyan-400",
+                            },
+                            deployment: {
+                              text: "text-amber-400",
+                              bg: "bg-amber-500/10",
+                              border: "border-amber-500/20",
+                              dot: "bg-amber-400",
+                            },
+                          };
+
+                          const currentStatus = statusConfig[project.status.toLowerCase()] || {
+                            text: "text-gray-400",
+                            bg: "bg-gray-500/10",
+                            border: "border-white/5",
+                            dot: "bg-gray-400",
+                          };
+
+                          return (
+                            <span
+                              className={`font-mono text-[9px] px-2 py-0.5 rounded border tracking-wider font-bold uppercase flex items-center gap-1.5 ${currentStatus.bg} ${currentStatus.text} ${currentStatus.border}`}
+                            >
+                              <span className={`w-1 h-1 rounded-full animate-pulse ${currentStatus.dot}`} />
+                              {project.status}
+                            </span>
+                          );
+                        })()}
                     </div>
                     <h5 className="text-sm font-bold text-white tracking-wide group-hover:text-cyan-400 transition-colors">{project.title}</h5>
 
@@ -171,7 +202,7 @@ export default function AdminProjectsPage() {
               )}
             </div>
 
-            {projects.length > 3 && (
+            {projects.length > 2 && (
               <div className="flex justify-center pt-4">
                 <button
                   onClick={() => setIsExpanded(!isExpanded)}
@@ -183,7 +214,7 @@ export default function AdminProjectsPage() {
                     </>
                   ) : (
                     <>
-                      VIEW ALL PROJECTS ({projects.length - 3} MORE) <ChevronDown size={14} />
+                      VIEW ALL PROJECTS ({projects.length - 2} MORE) <ChevronDown size={14} />
                     </>
                   )}
                 </button>

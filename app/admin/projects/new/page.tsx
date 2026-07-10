@@ -1,237 +1,207 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { useRouter } from "next/navigation";
-import { FolderPlus, ArrowLeft, Image as ImageIcon, Plus, X, Terminal, Cpu } from "lucide-react";
-import Image from "next/image";
+import Link from "next/link";
+import { ArrowLeft, Loader2, Plus, LayoutGrid, FileText, Link2, Info, Settings } from "lucide-react";
+import { useProjectForm } from "@/hooks/useProjectForm";
+import { MediaUploader } from "@/components/admin/MediaUploader";
 
 export default function NewProjectPage() {
-  const router = useRouter();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const [title, setTitle] = useState("");
-  const [category, setCategory] = useState("SHELL");
-  const [status, setStatus] = useState("COMPLETED");
-  const [description, setDescription] = useState("");
-  const [fullDescription, setFullDescription] = useState("");
-  const [techInput, setTechInput] = useState("");
-  const [link, setLink] = useState("");
-
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const removeImage = () => {
-    setImagePreview(null);
-    if (fileInputRef.current) fileInputRef.current.value = "";
-  };
-
-  const handlePublish = (e: React.FormEvent) => {
-    e.preventDefault();
-    const statusColor = status === "COMPLETED" ? "bg-emerald-500/10 text-emerald-400 ring-emerald-500/20" : "bg-cyan-500/10 text-cyan-400 ring-cyan-500/20";
-
-    const payload = {
-      title: title.toUpperCase(),
-      category: category.toUpperCase(),
-      status,
-      statusColor,
-      description,
-      fullDescription,
-      techStack: techInput
-        .split(",")
-        .map((t) => t.trim().toUpperCase())
-        .filter(Boolean),
-      link: link || "#",
-      imageSrc: imagePreview,
-    };
-
-    console.log("Saving payload:", payload);
-    alert("Project workspace created successfully!");
-    router.push("/admin/projects");
-  };
+  const { states, setters, refs, handlers } = useProjectForm();
 
   return (
-    <div className="w-full space-y-6 animate-fade-in pb-12">
-      <button onClick={() => router.push("/admin/projects")} className="flex items-center gap-2 font-mono text-[11px] text-gray-400 hover:text-cyan-400 transition-colors group px-1">
-        <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
-        BACK TO WORKSPACE
-      </button>
+    <div className="max-w-7xl mx-auto space-y-8">
+      <div className="flex items-center gap-4 pb-2">
+        <Link href="/admin/projects" className="p-2.5 bg-[#0d1527] rounded-xl border border-white/5 hover:bg-white/5 transition duration-200">
+          <ArrowLeft size={16} className="text-gray-400 hover:text-white" />
+        </Link>
+        <div>
+          <h1 className="font-mono text-sm tracking-widest text-cyan-400 uppercase font-bold">System Integration</h1>
+          <p className="text-[11px] font-mono text-gray-500 uppercase tracking-wider">Deploy new archive node to the public matrix</p>
+        </div>
+      </div>
 
-      <form onSubmit={handlePublish} className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        <div className="lg:col-span-7 w-full">
-          <div
-            className="p-8 md:p-10 rounded-3xl bg-[#081328]/70 border border-transparent shadow-2xl space-y-6 w-full"
-            style={{
-              backgroundImage: "linear-gradient(#081328, #040814), linear-gradient(to bottom, #22d3ee, #a855f7)",
-              backgroundClip: "padding-box, border-box",
-              backgroundOrigin: "border-box",
-            }}
-          >
-            <div className="flex items-center gap-2 border-b border-white/5 pb-4">
-              <FolderPlus className="text-cyan-400" size={20} />
-              <div>
-                <h3 className="font-mono text-sm uppercase tracking-widest text-white font-bold">Deploy Artifact Data</h3>
-                <p className="font-mono text-[10px] text-gray-500 mt-0.5">Configure core engine specification structure</p>
+      <div className="bg-[#0b121f] border-2 border-blue-500/40 rounded-[2rem] p-6 lg:p-10 shadow-[0_0_40px_rgba(37,99,235,0.05)]">
+        <div className="flex items-center gap-4 border-b border-white/5 pb-6 mb-8">
+          <div className="p-3 bg-blue-500/10 rounded-xl border border-blue-500/20 text-blue-400">
+            <LayoutGrid size={20} />
+          </div>
+          <div>
+            <h2 className="font-mono text-base tracking-widest text-white uppercase font-bold">INITIALIZE PROJECT RECORD</h2>
+            <p className="text-[11px] font-mono text-gray-400">Inject project architecture parameters node</p>
+          </div>
+        </div>
+
+        <form id="project-main-form" onSubmit={handlers.handlePublish} className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          <div className="lg:col-span-7 space-y-6 w-full">
+            {/* Input 1: Project Title */}
+            <div className="space-y-2">
+              <label className="font-mono text-[11px] uppercase tracking-widest text-gray-400 font-bold block">Project Title / Name</label>
+              <input
+                type="text"
+                name="title"
+                value={states.title}
+                onChange={(e) => {
+                  setters.setTitle(e.target.value);
+                  if (states.errors.title) setters.setErrors((prev) => ({ ...prev, title: "" }));
+                }}
+                placeholder="E.G. JUNIOR WEB DEVELOPER"
+                className={`w-full bg-[#050911] border rounded-xl px-4 py-3.5 font-mono text-xs text-white placeholder-gray-600 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all uppercase ${
+                  states.errors.title ? "border-rose-500/50 bg-rose-950/5 text-rose-200" : "border-white/5"
+                }`}
+              />
+              {states.errors.title && <p className="font-mono text-[10px] text-rose-400 pl-1">⚠️ {states.errors.title}</p>}
+            </div>
+
+            {/* Grid Row: Category Target & Lifecycle Status */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Input 2: Category Target */}
+              <div className="space-y-2">
+                <label className="font-mono text-[11px] uppercase tracking-widest text-gray-400 font-bold block">Category Target</label>
+                <select
+                  name="category"
+                  value={states.category}
+                  onChange={(e) => setters.setCategory(e.target.value)}
+                  className="w-full bg-[#050911] border border-white/5 rounded-xl px-4 py-3.5 font-mono text-xs text-white focus:outline-none focus:border-blue-500/50 transition-all appearance-none cursor-pointer"
+                >
+                  <option value="website" className="bg-[#0b121f]">
+                    WEBSITE ARCHITECTURE
+                  </option>
+                  <option value="mobile" className="bg-[#0b121f]">
+                    MOBILE APPLICATION
+                  </option>
+                </select>
+              </div>
+
+              {/* Input 3: Lifecycle Status */}
+              <div className="space-y-2">
+                <label className="font-mono text-[11px] uppercase tracking-widest text-gray-400 font-bold block">Lifecycle Status</label>
+                <select
+                  name="status"
+                  value={states.status}
+                  onChange={(e) => setters.setStatus(e.target.value)}
+                  className="w-full bg-[#050911] border border-white/5 rounded-xl px-4 py-3.5 font-mono text-xs text-white focus:outline-none focus:border-blue-500/50 transition-all appearance-none cursor-pointer"
+                >
+                  <option value="COMPLETED" className="bg-[#0b121f]">
+                    COMPLETED / STABLE
+                  </option>
+                  <option value="DEPLOYMENT" className="bg-[#0b121f]">
+                    STAGE DEPLOYMENT
+                  </option>
+                  <option value="PRODUCTION" className="bg-[#0b121f]">
+                    PRODUCTION LIVE
+                  </option>
+                </select>
               </div>
             </div>
 
-            <div className="space-y-4">
-              <div className="space-y-1.5">
-                <label className="block font-mono text-[10px] tracking-wider text-gray-400 uppercase">Project Title</label>
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g. REKAP ABSENSI DIGITAL & HRIS"
-                  className="w-full bg-[#030712]/60 border border-white/5 focus:border-cyan-500/40 rounded-xl px-4 py-3 font-mono text-xs text-white placeholder-gray-600 focus:outline-none transition-all uppercase"
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="block font-mono text-[10px] tracking-wider text-gray-400 uppercase flex items-center gap-1">
-                    <Terminal size={10} /> Shell // Category
-                  </label>
-                  <select
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    className="w-full bg-[#030712]/60 border border-white/5 focus:border-cyan-500/40 rounded-xl px-4 py-3 font-mono text-xs text-white focus:outline-none transition-all cursor-pointer appearance-none"
-                  >
-                    <option value="SHELL">SHELL</option>
-                    <option value="SOFTWARE">SOFTWARE</option>
-                    <option value="WEB APP">WEB APP</option>
-                    <option value="FINTECH">FINTECH</option>
-                    <option value="CORE ENGINE">CORE ENGINE</option>
-                  </select>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="block font-mono text-[10px] tracking-wider text-gray-400 uppercase">Deploy Status</label>
-                  <select
-                    value={status}
-                    onChange={(e) => setStatus(e.target.value)}
-                    className="w-full bg-[#030712]/60 border border-white/5 focus:border-cyan-500/40 rounded-xl px-4 py-3 font-mono text-xs text-white focus:outline-none transition-all cursor-pointer appearance-none"
-                  >
-                    <option value="COMPLETED">COMPLETED (Green Glow)</option>
-                    <option value="STABLE">STABLE (Cyan Glow)</option>
-                    <option value="PRODUCTION">PRODUCTION</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="block font-mono text-[10px] tracking-wider text-gray-400 uppercase">Brief Description (Workspace List View)</label>
-                <input
-                  type="text"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Sistem otomasi manajemen pangkalan data perusahaan..."
-                  className="w-full bg-[#030712]/60 border border-white/5 focus:border-cyan-500/40 rounded-xl px-4 py-3 font-mono text-xs text-white placeholder-gray-600 focus:outline-none transition-all"
-                  required
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="block font-mono text-[10px] tracking-wider text-gray-400 uppercase">Full Overview Description (Pop-Up Detail View)</label>
-                <textarea
-                  value={fullDescription}
-                  onChange={(e) => setFullDescription(e.target.value)}
-                  placeholder="An advanced, comprehensive Human Resource Information System engineered to handle complex enterprise operational workflows..."
-                  rows={5}
-                  className="w-full bg-[#030712]/60 border border-white/5 focus:border-cyan-500/40 rounded-xl px-4 py-3 font-mono text-xs text-white placeholder-gray-600 focus:outline-none transition-all resize-none leading-relaxed"
-                  required
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="block font-mono text-[10px] tracking-wider text-gray-400 uppercase flex items-center gap-1">
-                  <Cpu size={10} /> Engine // Infrastructure Stack (comma separated)
-                </label>
-                <input
-                  type="text"
-                  value={techInput}
-                  onChange={(e) => setTechInput(e.target.value)}
-                  placeholder="LARAVEL, POSTGRESQL, TAILWIND CSS, DOCKER"
-                  className="w-full bg-[#030712]/60 border border-white/5 focus:border-cyan-500/40 rounded-xl px-4 py-3 font-mono text-xs text-white placeholder-gray-600 focus:outline-none transition-all uppercase"
-                  required
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="block font-mono text-[10px] tracking-wider text-gray-400 uppercase">Platform Live Target URL (Optional)</label>
-                <input
-                  type="url"
-                  value={link}
-                  onChange={(e) => setLink(e.target.value)}
-                  placeholder="https://github.com/yourusername/project"
-                  className="w-full bg-[#030712]/60 border border-white/5 focus:border-purple-500/40 rounded-xl px-4 py-3 font-mono text-xs text-white placeholder-gray-600 focus:outline-none transition-all"
-                />
-              </div>
+            {/* Input 4: Brief Description */}
+            <div className="space-y-2">
+              <label className="font-mono text-[11px] uppercase tracking-widest text-gray-400 font-bold block">Brief Description</label>
+              <input
+                type="text"
+                name="description"
+                value={states.description}
+                onChange={(e) => {
+                  setters.setDescription(e.target.value);
+                  if (states.errors.description) setters.setErrors((prev) => ({ ...prev, description: "" }));
+                }}
+                placeholder="Short pitch summarizing the project node"
+                className={`w-full bg-[#050911] border rounded-xl px-4 py-3.5 font-mono text-xs text-white placeholder-gray-600 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all ${
+                  states.errors.description ? "border-rose-500/50 bg-rose-950/5 text-rose-200" : "border-white/5"
+                }`}
+              />
+              {states.errors.description && <p className="font-mono text-[10px] text-rose-400 pl-1">⚠️ {states.errors.description}</p>}
             </div>
 
-            <div className="pt-2">
+            {/* Input 5: Full Overview Description */}
+            <div className="space-y-2">
+              <label className="font-mono text-[11px] uppercase tracking-widest text-gray-400 font-bold block">Full Overview Description</label>
+              <textarea
+                name="full_description"
+                rows={5}
+                value={states.fullDescription}
+                onChange={(e) => {
+                  setters.setFullDescription(e.target.value);
+                  if (states.errors.fullDescription) setters.setErrors((prev) => ({ ...prev, fullDescription: "" }));
+                }}
+                placeholder="Developed and maintained full-stack system architecture details..."
+                className={`w-full bg-[#050911] border rounded-xl px-4 py-3.5 font-mono text-xs text-white placeholder-gray-600 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all resize-none ${
+                  states.errors.fullDescription ? "border-rose-500/50 bg-rose-950/5 text-rose-200" : "border-white/5"
+                }`}
+              />
+              {states.errors.fullDescription && <p className="font-mono text-[10px] text-rose-400 pl-1">⚠️ {states.errors.fullDescription}</p>}
+            </div>
+
+            {/* Input 6: Infrastructure / Tech Stack */}
+            <div className="space-y-2">
+              <label className="font-mono text-[11px] uppercase tracking-widest text-gray-400 font-bold block">&gt;_ Core Tech Stack (Comma Separated)</label>
+              <input
+                type="text"
+                name="tech_stack"
+                value={states.techInput}
+                onChange={(e) => {
+                  setters.setTechInput(e.target.value);
+                  if (states.errors.techInput) setters.setErrors((prev) => ({ ...prev, techInput: "" }));
+                }}
+                placeholder="Laravel, CodeIgniter 4, MySQL, Bootstrap"
+                className={`w-full bg-[#050911] border rounded-xl px-4 py-3.5 font-mono text-xs text-white placeholder-gray-600 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all ${
+                  states.errors.techInput ? "border-rose-500/50 bg-rose-950/5 text-rose-200" : "border-white/5"
+                }`}
+              />
+              {states.errors.techInput && <p className="font-mono text-[10px] text-rose-400 pl-1">⚠️ {states.errors.techInput}</p>}
+            </div>
+
+            {/* Input 7: Live Deployment Link */}
+            <div className="space-y-2">
+              <label className="font-mono text-[11px] uppercase tracking-widest text-gray-400 font-bold block">Live Deployment Link</label>
+              <input
+                type="url"
+                name="link"
+                value={states.link}
+                onChange={(e) => {
+                  setters.setLink(e.target.value);
+                  if (states.errors.link) setters.setErrors((prev) => ({ ...prev, link: "" }));
+                }}
+                placeholder="https://your-live-project.com"
+                className={`w-full bg-[#050911] border rounded-xl px-4 py-3.5 font-mono text-xs text-white placeholder-gray-600 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all ${
+                  states.errors.link ? "border-rose-500/50 bg-rose-950/5 text-rose-200" : "border-white/5"
+                }`}
+              />
+              {states.errors.link && <p className="font-mono text-[10px] text-rose-400 pl-1">⚠️ {states.errors.link}</p>}
+            </div>
+
+            {/* Button Publish Gradasi Biru-Ungu Lebar Penuh */}
+            <div className="pt-4">
               <button
                 type="submit"
-                className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-500 p-4 text-xs font-mono font-bold tracking-widest text-white hover:opacity-90 transition-all shadow-xl shadow-purple-500/10"
+                disabled={states.isSubmitting}
+                className="w-full bg-gradient-to-r from-[#2164f3] to-[#9626fa] text-white font-mono text-xs uppercase tracking-widest py-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:from-[#1b52ce] hover:to-[#7c1ed4] active:scale-[0.99] disabled:opacity-40 disabled:pointer-events-none transition-all duration-300 shadow-[0_4px_20px_rgba(150,38,250,0.15)] hover:shadow-[0_4px_25px_rgba(33,100,243,0.3)]"
               >
-                INITIALIZE & PUBLISH DATA WORKSPACE
+                {states.isSubmitting ? (
+                  <>
+                    <Loader2 size={14} className="animate-spin text-white" /> COMPILING TIMELINE NODE...
+                  </>
+                ) : (
+                  <>
+                    <Plus size={14} /> PUBLISH TIMELINE NODE
+                  </>
+                )}
               </button>
             </div>
           </div>
-        </div>
 
-        <div className="lg:col-span-5 space-y-4 w-full">
-          <div className="p-1 px-2 font-mono text-[10px] uppercase tracking-widest text-gray-400 flex items-center gap-1.5">
-            <ImageIcon size={12} /> Media Interface Target
+          {/* Kolom Kanan: Media/Gambar Portofolio */}
+          <div className="lg:col-span-5 w-full lg:sticky lg:top-6">
+            <MediaUploader
+              imagePreview={states.imagePreview}
+              error={states.errors.image}
+              fileInputRef={refs.fileInputRef}
+              onImageChange={handlers.handleImageChange}
+              onRemoveImage={handlers.removeSelectedImage}
+            />
           </div>
-
-          <div className="relative h-64 lg:h-[520px] w-full rounded-3xl bg-[#02060d] border border-white/5 border-dashed flex flex-col items-center justify-center overflow-hidden transition-all duration-300 group hover:border-cyan-500/30 shadow-inner">
-            {imagePreview ? (
-              <>
-                <Image src={imagePreview} alt="Live preview mockup" fill className="object-cover opacity-85" />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#050c18] via-transparent to-transparent opacity-90" />
-
-                <button
-                  type="button"
-                  onClick={removeImage}
-                  className="absolute bottom-4 right-4 z-20 p-2 rounded-xl bg-black/60 border border-white/10 text-rose-400 hover:text-rose-300 backdrop-blur-md text-xs font-mono flex items-center gap-1 transition-all"
-                >
-                  <X size={12} /> PURGE IMAGE
-                </button>
-              </>
-            ) : (
-              <div className="p-8 text-center space-y-3 relative z-10 w-full">
-                <div className="w-12 h-12 rounded-2xl bg-white/[0.02] border border-white/5 flex items-center justify-center mx-auto text-gray-500 group-hover:text-cyan-400 transition-colors">
-                  <Plus size={20} />
-                </div>
-                <div>
-                  <p className="font-mono text-xs text-gray-300">Upload Interface Image</p>
-                  <p className="font-mono text-[10px] text-gray-500 mt-1">Recommended aspect ratio 4:3 or Portrait</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="px-4 py-2 rounded-xl bg-[#081328] border border-white/5 text-gray-400 hover:text-white font-mono text-[10px] tracking-wider transition-all"
-                >
-                  BROWSE FILE
-                </button>
-              </div>
-            )}
-
-            <input type="file" ref={fileInputRef} onChange={handleImageChange} accept="image/*" className="hidden" />
-          </div>
-        </div>
-      </form>
+        </form>
+      </div>
     </div>
   );
 }
