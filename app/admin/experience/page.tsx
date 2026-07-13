@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Briefcase, Plus, Trash2, Edit3, Calendar, Layers, Terminal, ChevronDown, ChevronUp } from "lucide-react";
+import { Briefcase, Plus, Trash2, Edit3, Calendar, Layers, Terminal, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
+import { useExperienceForm } from "@/hooks/useExperienceForm";
 import SkeletonLoader from "@/components/admin/SkeletonLoader";
 
 // supabase
@@ -33,62 +34,32 @@ interface ExperienceItem {
 export default function AdminExperiencePage() {
   const [experiences, setExperiences] = useState<ExperienceEntity[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
+
   const [role, setRole] = useState("");
   const [period, setPeriod] = useState("");
   const [description, setDescription] = useState("");
   const [tagsInput, setTagsInput] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  const [isExpanded, setIsExpanded] = useState(false);
+  const fetchExperiences = async () => {
+    setLoading(true);
+    try {
+      const data = await getAllExperiences();
+      setExperiences(data);
+    } catch (error) {
+      console.error("Gagal sinkronisasi data proyek:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    async function fetchExperiences() {
-      try {
-        const data = await getAllExperiences();
-
-        setExperiences(data);
-      } catch (error) {
-        console.error("Gagal sinkronisasi data proyek:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
     fetchExperiences();
   }, []);
 
+  const { states, setters, refs, handlers } = useExperienceForm(fetchExperiences);
   const visibleExperiences = isExpanded ? experiences : experiences.slice(0, 2);
-
-  // const handleSubmit = (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   const formattedTags = tagsInput
-  //     .split(",")
-  //     .map((t) => t.trim())
-  //     .filter(Boolean);
-  //   const yearMatch = period.match(/\d{4}/);
-  //   const inferredYear = yearMatch ? yearMatch[0] : "";
-
-  //   if (editingId) {
-  //     setExperiences(experiences.map((exp) => (exp.id === editingId ? { ...exp, role: role.toUpperCase(), period, description, tags: formattedTags, yearBackground: inferredYear } : exp)));
-  //     setEditingId(null);
-  //     alert("Record updated.");
-  //   } else {
-  //     const newExp: ExperienceEntity = {
-  //       id: Date.now().toString(),
-  //       role: role.toUpperCase(),
-  //       periode,
-  //       year_background: inferredYear,
-  //       description,
-  //       te: formattedTags,
-  //     };
-  //     setExperiences([newExp, ...experiences]);
-  //     alert("Node created.");
-  //   }
-
-  //   setRole("");
-  //   setPeriod("");
-  //   setDescription("");
-  //   setTagsInput("");
-  // };
 
   const startEdit = (item: ExperienceItem) => {
     setEditingId(item.id);
@@ -126,7 +97,7 @@ export default function AdminExperiencePage() {
       <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         <div className="lg:col-span-5 w-full">
           <form
-            // onSubmit={handleSubmit}
+            onSubmit={handlers.handlePublish}
             className="p-6 md:p-8 rounded-3xl bg-[#081328]/70 border border-transparent shadow-2xl space-y-5"
             style={{
               backgroundImage: "linear-gradient(#081328, #040814), linear-gradient(to bottom, #3b82f6, #8b5cf6)",
@@ -137,75 +108,119 @@ export default function AdminExperiencePage() {
             <div className="flex items-center gap-2 border-b border-white/5 pb-4">
               <Briefcase className="text-blue-400" size={18} />
               <div>
-                <h3 className="font-mono text-xs uppercase tracking-widest text-white font-bold">{editingId ? "Modify Record" : "Initialize Record"}</h3>
+                <h3 className="font-mono text-xs uppercase tracking-widest text-white font-bold">{typeof editingId !== "undefined" && editingId ? "Modify Record" : "Initialize Record"}</h3>
                 <p className="font-mono text-[9px] text-gray-500">Inject career parameters node</p>
               </div>
             </div>
 
             <div className="space-y-4">
+              {/* Input 1: Role / Position */}
               <div className="space-y-1.5">
                 <label className="block font-mono text-[10px] tracking-wider text-gray-400 uppercase">Role / Position</label>
                 <input
                   type="text"
-                  value={role}
-                  onChange={(e) => setRole(e.target.value)}
+                  value={states.role}
+                  onChange={(e) => {
+                    setters.setRole(e.target.value);
+                    if (states.errors.role) setters.setErrors((prev) => ({ ...prev, role: "" }));
+                  }}
                   placeholder="e.g. JUNIOR WEB DEVELOPER"
-                  className="w-full bg-[#030712]/60 border border-white/5 focus:border-blue-500/40 rounded-xl px-4 py-3 font-mono text-xs text-white placeholder-gray-600 focus:outline-none transition-all uppercase"
-                  required
+                  className={`w-full bg-[#050911] border rounded-xl px-4 py-3.5 font-mono text-xs text-white placeholder-gray-600 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all uppercase ${
+                    states.errors.role ? "border-rose-500/50 bg-rose-950/5 text-rose-200" : "border-white/5"
+                  }`}
                 />
+                {states.errors.role && <p className="font-mono text-[10px] text-rose-400 pl-1">⚠️ {states.errors.role}</p>}
               </div>
 
+              {/* Input 2: Period Matrix */}
               <div className="space-y-1.5">
                 <label className="block font-mono text-[10px] tracking-wider text-gray-400 uppercase flex items-center gap-1">
                   <Calendar size={10} /> Period Matrix
                 </label>
                 <input
                   type="text"
-                  value={period}
-                  onChange={(e) => setPeriod(e.target.value)}
+                  value={states.periode}
+                  onChange={(e) => {
+                    setters.setPeriode(e.target.value); // 🛠️ Perbaikan: Sebelumnya setRole
+                    if (states.errors.periode) setters.setErrors((prev) => ({ ...prev, periode: "" }));
+                  }}
                   placeholder="e.g. 03.2 2023 – 2024"
-                  className="w-full bg-[#030712]/60 border border-white/5 focus:border-blue-500/40 rounded-xl px-4 py-3 font-mono text-xs text-white placeholder-gray-600 focus:outline-none transition-all"
-                  required
+                  className={`w-full bg-[#050911] border rounded-xl px-4 py-3.5 font-mono text-xs text-white placeholder-gray-600 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all uppercase ${
+                    states.errors.periode ? "border-rose-500/50 bg-rose-950/5 text-rose-200" : "border-white/5"
+                  }`}
                 />
+                {states.errors.periode && <p className="font-mono text-[10px] text-rose-400 pl-1">⚠️ {states.errors.periode}</p>}
               </div>
 
+              {/* Input 3: Year Background (Tambahan Penting Wajib Diisi) */}
+              <div className="space-y-1.5">
+                <label className="block font-mono text-[10px] tracking-wider text-gray-400 uppercase">Year Background</label>
+                <input
+                  type="text"
+                  value={states.yearBackground}
+                  onChange={(e) => {
+                    setters.setYearBackground(e.target.value);
+                    if (states.errors.yearBackground) setters.setErrors((prev) => ({ ...prev, yearBackground: "" }));
+                  }}
+                  placeholder="e.g. 2024"
+                  className={`w-full bg-[#050911] border rounded-xl px-4 py-3.5 font-mono text-xs text-white placeholder-gray-600 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all uppercase ${
+                    states.errors.yearBackground ? "border-rose-500/50 bg-rose-950/5 text-rose-200" : "border-white/5"
+                  }`}
+                />
+                {states.errors.yearBackground && <p className="font-mono text-[10px] text-rose-400 pl-1">⚠️ {states.errors.yearBackground}</p>}
+              </div>
+
+              {/* Input 4: Task Description Overview */}
               <div className="space-y-1.5">
                 <label className="block font-mono text-[10px] tracking-wider text-gray-400 uppercase">Task Description Overview</label>
                 <textarea
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Developed and maintained full-stack digital attendance systems..."
                   rows={4}
-                  className="w-full bg-[#030712]/60 border border-white/5 focus:border-blue-500/40 rounded-xl px-4 py-3 font-sans text-xs text-white placeholder-gray-600 focus:outline-none transition-all resize-none leading-relaxed"
-                  required
+                  value={states.description}
+                  onChange={(e) => {
+                    setters.setDescription(e.target.value); // 🛠️ Perbaikan: Sebelumnya setRole
+                    if (states.errors.description) setters.setErrors((prev) => ({ ...prev, description: "" }));
+                  }}
+                  placeholder="Developed and maintained full-stack digital attendance systems..."
+                  className={`w-full bg-[#050911] border rounded-xl px-4 py-3.5 font-mono text-xs text-white placeholder-gray-600 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all resize-none ${
+                    states.errors.description ? "border-rose-500/50 bg-rose-950/5 text-rose-200" : "border-white/5"
+                  }`}
                 />
+                {states.errors.description && <p className="font-mono text-[10px] text-rose-400 pl-1">⚠️ {states.errors.description}</p>}
               </div>
 
+              {/* Input 5: Core Tech Stack */}
               <div className="space-y-1.5">
                 <label className="block font-mono text-[10px] tracking-wider text-gray-400 uppercase flex items-center gap-1">
                   <Terminal size={10} /> Core Tech Stack (comma separated)
                 </label>
                 <input
                   type="text"
-                  value={tagsInput}
-                  onChange={(e) => setTagsInput(e.target.value)}
+                  value={states.techInput}
+                  onChange={(e) => {
+                    setters.setTechInput(e.target.value);
+                    if (states.errors.techInput) setters.setErrors((prev) => ({ ...prev, techInput: "" }));
+                  }}
                   placeholder="Laravel, CodeIgniter 4, MySQL, Bootstrap"
-                  className="w-full bg-[#030712]/60 border border-white/5 focus:border-blue-500/40 rounded-xl px-4 py-3 font-mono text-xs text-white placeholder-gray-600 focus:outline-none transition-all"
-                  required
+                  className={`w-full bg-[#050911] border rounded-xl px-4 py-3.5 font-mono text-xs text-white placeholder-gray-600 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all ${
+                    states.errors.techInput ? "border-rose-500/50 bg-rose-950/5 text-rose-200" : "border-white/5"
+                  }`}
                 />
+                {states.errors.techInput && <p className="font-mono text-[10px] text-rose-400 pl-1">⚠️ {states.errors.techInput}</p>}
               </div>
             </div>
 
+            {/* Form Footer Action Buttons */}
             <div className="pt-2 flex gap-2">
-              {editingId && (
+              {typeof editingId !== "undefined" && editingId && (
                 <button
                   type="button"
                   onClick={() => {
-                    setEditingId(null);
-                    setRole("");
-                    setPeriod("");
-                    setDescription("");
-                    setTagsInput("");
+                    if (typeof setEditingId === "function") setEditingId(null);
+                    setters.setRole("");
+                    setters.setPeriode("");
+                    setters.setYearBackground("");
+                    setters.setDescription("");
+                    setters.setTechInput("");
                   }}
                   className="px-4 rounded-xl bg-white/5 border border-white/10 text-gray-400 font-mono text-xs hover:text-white transition-all"
                 >
@@ -214,10 +229,18 @@ export default function AdminExperiencePage() {
               )}
               <button
                 type="submit"
-                className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 p-3.5 text-xs font-mono font-bold tracking-widest text-white hover:opacity-90 transition-all shadow-lg shadow-blue-500/10"
+                disabled={states.isSubmitting}
+                className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 p-3.5 text-xs font-mono font-bold tracking-widest text-white hover:opacity-90 transition-all shadow-lg shadow-blue-500/10 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Plus size={14} />
-                {editingId ? "SAVE MODIFICATION" : "PUBLISH TIMELINE NODE"}
+                {states.isSubmitting ? (
+                  <>
+                    <Loader2 size={14} className="animate-spin text-white" /> COMPILING TIMELINE NODE...
+                  </>
+                ) : (
+                  <>
+                    <Plus size={14} /> {typeof editingId !== "undefined" && editingId ? "SAVE MODIFICATION" : "PUBLISH TIMELINE NODE"}
+                  </>
+                )}
               </button>
             </div>
           </form>
