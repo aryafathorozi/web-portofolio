@@ -4,11 +4,14 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Trash2, Edit3, Layers, Eye, ChevronDown, ChevronUp, Code } from "lucide-react";
 import ProjectDetailModal from "@/components/admin/ProjectDetailModal";
+import UpdateProjectModal from "@/components/admin/UpdateProjectModal";
+import DeleteConfirmModal from "@/components/admin/DeleteConfirmModal";
 import SkeletonLoader from "@/components/admin/SkeletonLoader";
 
 // supabase
 import { ProjectEntity } from "@/types/database.types";
-import { getAllProjects } from "@/services/projectService";
+import { getAllProjects, deleteProject } from "@/services/projectService";
+import { toast } from "@/services/toastService";
 
 const getTechArray = (rawTech: any): string[] => {
   if (!rawTech) return [];
@@ -30,20 +33,26 @@ export default function AdminProjectsPage() {
   const [loading, setLoading] = useState(true);
   const [isExpanded, setIsExpanded] = useState(false);
   const [selectedProject, setSelectedProject] = useState<ProjectEntity | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  
+  const [projectToDelete, setProjectToDelete] = useState<ProjectEntity | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const fetchProjects = async () => {
+    setLoading(true);
+    try {
+      const data = await getAllProjects();
+      setProjects(data);
+    } catch (error) {
+      console.error("Gagal sinkronisasi data proyek:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    async function fetchProjects() {
-      try {
-        const data = await getAllProjects();
-
-        setProjects(data);
-      } catch (error) {
-        console.error("Gagal sinkronisasi data proyek:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
     fetchProjects();
   }, []);
 
@@ -51,12 +60,34 @@ export default function AdminProjectsPage() {
 
   const openDetailModal = (project: ProjectEntity) => {
     setSelectedProject(project);
-    setIsModalOpen(true);
+    setIsDetailModalOpen(true);
   };
 
-  const handleDelete = (id: string) => {
-    if (confirm("Are you sure you want to delete this repository project?")) {
-      setProjects(projects.filter((p) => p.id !== id));
+  const openUpdateModal = (project: ProjectEntity) => {
+    setSelectedProject(project);
+    setIsUpdateModalOpen(true);
+  };
+
+  const openDeleteModal = (project: ProjectEntity) => {
+    setProjectToDelete(project);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    setIsDeleting(true);
+    try {
+        const res = await deleteProject(id);
+        if (res.success) {
+            toast.success("PROJECT DELETED", "Repository successfully purged from database.");
+            setProjects(projects.filter((p) => p.id !== id));
+            setIsDeleteModalOpen(false);
+        } else {
+            toast.error("DELETE FAILED", res.error || "Unknown error occurred.");
+        }
+    } catch (error: any) {
+        toast.error("RUNTIME ERROR", error.message);
+    } finally {
+        setIsDeleting(false);
     }
   };
 
@@ -176,7 +207,7 @@ export default function AdminProjectsPage() {
                     </button>
 
                     <button
-                      onClick={() => router.push(`/admin/projects/edit/${project.id}`)}
+                      onClick={() => openUpdateModal(project)}
                       className="p-2.5 rounded-xl border border-white/5 bg-[#070d19]/50 text-gray-400 hover:text-purple-400 hover:border-purple-500/30 transition-all duration-200"
                       title="Update Data Workspace"
                     >
@@ -184,7 +215,7 @@ export default function AdminProjectsPage() {
                     </button>
 
                     <button
-                      onClick={() => handleDelete(project.id!)}
+                      onClick={() => openDeleteModal(project)}
                       className="p-2.5 rounded-xl border border-white/5 bg-[#070d19]/50 text-gray-400 hover:text-rose-400 hover:border-rose-500/30 transition-all duration-200"
                       title="Purge From Database"
                     >
@@ -226,11 +257,34 @@ export default function AdminProjectsPage() {
 
       <ProjectDetailModal
         project={selectedProject}
-        isOpen={isModalOpen}
+        isOpen={isDetailModalOpen}
         onClose={() => {
-          setIsModalOpen(false);
+          setIsDetailModalOpen(false);
           setSelectedProject(null);
         }}
+      />
+      
+      <UpdateProjectModal 
+        project={selectedProject}
+        isOpen={isUpdateModalOpen}
+        onClose={() => {
+            setIsUpdateModalOpen(false);
+            setSelectedProject(null);
+        }}
+        onSuccess={() => {
+            fetchProjects();
+        }}
+      />
+
+      <DeleteConfirmModal
+        project={projectToDelete}
+        isOpen={isDeleteModalOpen}
+        isDeleting={isDeleting}
+        onClose={() => {
+            setIsDeleteModalOpen(false);
+            setProjectToDelete(null);
+        }}
+        onConfirm={handleDelete}
       />
     </div>
   );

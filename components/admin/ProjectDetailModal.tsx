@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { X, Cpu, Layers, CheckCircle2, ExternalLink, Terminal } from "lucide-react";
+import { X, Cpu, Layers, CheckCircle2, ExternalLink, Terminal, HelpCircle, Server, Globe } from "lucide-react";
 import Image from "next/image";
 import { ProjectEntity } from "@/types/database.types";
 
@@ -24,8 +24,8 @@ const getTechArray = (rawTech: any): string[] => {
   return [];
 };
 
-export default function ProjectDetailModal({ project, onClose }: ProjectModalProps) {
-  if (!project) return null;
+export default function ProjectDetailModal({ project, isOpen, onClose }: ProjectModalProps) {
+  if (!project || !isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-10 overflow-y-auto">
@@ -64,9 +64,47 @@ export default function ProjectDetailModal({ project, onClose }: ProjectModalPro
         <div className="w-full lg:w-[45%] p-6 md:p-10 flex flex-col justify-between bg-gradient-to-b from-[#081326] to-[#040914] border-t lg:border-t-0 lg:border-l border-white/5 relative z-10">
           <div>
             <div className="flex items-center gap-2 mb-5">
-              <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-bold font-mono tracking-wider ring-1 ring-inset shadow-inner uppercase bg-emerald-500/10 text-emerald-400 ring-emerald-500/20">
-                <CheckCircle2 size={11} /> {project.status}
-              </span>
+              {project.status &&
+                (() => {
+                  const statusConfig: Record<string, { text: string; bg: string; ring: string; icon: React.ComponentType<{ size?: number; className?: string }> }> = {
+                    completed: {
+                      text: "text-emerald-400",
+                      bg: "bg-emerald-500/10",
+                      ring: "ring-emerald-500/20",
+                      icon: CheckCircle2,
+                    },
+                    production: {
+                      text: "text-cyan-400",
+                      bg: "bg-cyan-500/10",
+                      ring: "ring-cyan-500/20",
+                      icon: Globe,
+                    },
+                    deployment: {
+                      text: "text-amber-400",
+                      bg: "bg-amber-500/10",
+                      ring: "ring-amber-500/20",
+                      icon: Server,
+                    },
+                  };
+
+                  const currentStatus = statusConfig[project.status.toLowerCase()] || {
+                    text: "text-gray-400",
+                    bg: "bg-gray-500/10",
+                    ring: "ring-white/5",
+                    icon: HelpCircle,
+                  };
+
+                  const DynamicIcon = currentStatus.icon;
+
+                  return (
+                    <span
+                      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-bold font-mono tracking-wider ring-1 ring-inset shadow-inner uppercase transition-all duration-300 ${currentStatus.bg} ${currentStatus.text} ${currentStatus.ring}`}
+                    >
+                      <DynamicIcon size={11} className="shrink-0" />
+                      {project.status}
+                    </span>
+                  );
+                })()}
               <div className="h-[1px] flex-1 bg-white/5" />
             </div>
 
