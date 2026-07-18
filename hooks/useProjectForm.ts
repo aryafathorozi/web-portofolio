@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { createProject } from "@/services/projectService";
+import { useState, useRef, useEffect } from "react";
+import { createProject, updateProject } from "@/services/projectService";
 import { toast } from "@/services/toastService";
+import { ProjectEntity } from "@/types/database.types";
 
-export function useProjectForm() {
+export function useProjectForm(initialProject?: ProjectEntity | null, onSuccess?: () => void) {
     const [title, setTitle] = useState("");
     const [category, setCategory] = useState("website");
     const [description, setDescription] = useState("");
@@ -18,6 +19,31 @@ export function useProjectForm() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        if (initialProject) {
+            setTitle(initialProject.title || "");
+            setCategory(initialProject.category || "website");
+            setDescription(initialProject.description || "");
+            setFullDescription(initialProject.full_description || "");
+            
+            // Convert array back to comma separated string
+            if (initialProject.tech_stack) {
+                const stack = Array.isArray(initialProject.tech_stack) 
+                    ? initialProject.tech_stack 
+                    : typeof initialProject.tech_stack === 'string' 
+                        ? JSON.parse(initialProject.tech_stack) 
+                        : [];
+                setTechInput(stack.join(", "));
+            } else {
+                setTechInput("");
+            }
+            
+            setLink(initialProject.link || "");
+            setStatus(initialProject.status || "completed");
+            setImagePreview(initialProject.image_src || null);
+        }
+    }, [initialProject]);
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -50,7 +76,9 @@ export function useProjectForm() {
         if (!fullDescription.trim()) newErrors.fullDescription = "Full Description wajib diisi.";
         if (!techInput.trim()) newErrors.techInput = "Tech Stack wajib diisi.";
         if (!link.trim()) newErrors.link = "External Deployment Link wajib diisi.";
-        if (!selectedFile) newErrors.image = "Foto Interface Proyek mutlak wajib diunggah.";
+        if (!selectedFile && !imagePreview) {
+             newErrors.image = "Foto Interface Proyek mutlak wajib diunggah.";
+        }
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -58,6 +86,7 @@ export function useProjectForm() {
 
     const handlePublish = async (e: React.FormEvent) => {
         e.preventDefault();
+        
         if (!validateForm()) {
             toast.error("VALIDATION ERROR", "Sistem mendeteksi kolom kosong atau data tidak valid.");
             return;
@@ -73,15 +102,37 @@ export function useProjectForm() {
             formData.append("tech_stack", techInput);
             formData.append("link", link);
             formData.append("status", status);
-            if (selectedFile) formData.append("image", selectedFile);
 
-            const response = await createProject(formData);
-            if (response.success) {
-                toast.success("PROJECT PUBLISHED", `Node '${title.toUpperCase()}' safely initialized.`);
-                setTitle(""); setDescription(""); setFullDescription(""); setTechInput(""); setLink("");
-                removeSelectedImage();
+            if (initialProject?.image_src) {
+                formData.append("existing_image_src", initialProject.image_src);
+            }
+            if (selectedFile) {
+                formData.append("image", selectedFile);
+            }
+
+            let response;
+            if (initialProject?.id) {
+                // Update
+                response = await updateProject(initialProject.id, formData);
             } else {
-                toast.error("DEPLOYMENT FAILED", response.error);
+                // Create
+                response = await createProject(formData);
+            }
+
+            if (response.success) {
+                const actionText = initialProject?.id ? "UPDATED" : "PUBLISHED";
+                const actionWord = initialProject?.id ? "updated" : "initialized";
+                toast.success(`PROJECT ${actionText}`, `Node '${title.toUpperCase()}' safely ${actionWord}.`);
+                
+                if (!initialProject?.id) {
+                    // Clear form only on create
+                    setTitle(""); setDescription(""); setFullDescription(""); setTechInput(""); setLink("");
+                    removeSelectedImage();
+                }
+                
+                if (onSuccess) onSuccess();
+            } else {
+                toast.error(initialProject?.id ? "UPDATE FAILED" : "DEPLOYMENT FAILED", response.error || "Unknown error");
             }
         } catch (error: any) {
             toast.error("RUNTIME FAILURE", error.message);
