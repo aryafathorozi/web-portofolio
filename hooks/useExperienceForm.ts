@@ -1,10 +1,11 @@
 "use client"
 
-import React, { useState, useRef } from "react";
-import { createExperience } from "@/services/experienceService";
+import React, { useState, useRef, useEffect } from "react";
+import { createExperience, updateExperience } from "@/services/experienceService";
 import { toast } from "@/services/toastService";
+import { ExperienceEntity } from "@/types/database.types";
 
-export function useExperienceForm(onSuccessCallback?: () => Promise<void> | void) {
+export function useExperienceForm(initialExperience?: ExperienceEntity | null, onSuccessCallback?: () => Promise<void> | void) {
 
     const [role, setRole] = useState("");
     const [periode, setPeriode] = useState("");
@@ -15,6 +16,32 @@ export function useExperienceForm(onSuccessCallback?: () => Promise<void> | void
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        if (initialExperience) {
+            setRole(initialExperience.role || "");
+            setPeriode(initialExperience.periode || "");
+            setYearBackground(initialExperience.year_background || "");
+            setDescription(initialExperience.description || "");
+
+            if (initialExperience.tech_stack) {
+                const stack = Array.isArray(initialExperience.tech_stack)
+                    ? initialExperience.tech_stack
+                    : typeof initialExperience.tech_stack === 'string'
+                        ? JSON.parse(initialExperience.tech_stack)
+                        : [];
+                setTechInput(stack.join(", "));
+            } else {
+                setTechInput("");
+            }
+        } else {
+            setRole("");
+            setPeriode("");
+            setYearBackground("");
+            setDescription("");
+            setTechInput("");
+        }
+    }, [initialExperience]);
 
     const validateForm = (): boolean => {
         const newErrors: { [key: string]: string } = {};
@@ -44,16 +71,27 @@ export function useExperienceForm(onSuccessCallback?: () => Promise<void> | void
             formData.append("description", description);
             formData.append("tech_stack", techInput);
 
-            const response = await createExperience(formData);
+            let response;
+            if (initialExperience?.id) {
+                response = await updateExperience(initialExperience.id, formData);
+            } else {
+                response = await createExperience(formData);
+            }
+
             if (response.success) {
-                toast.success("EXPERIENCE PUBLISHED", "Safely initialized.");
-                setRole(""); setPeriode(""); setYearBackground(""); setDescription(""); setTechInput("");
+                const actionText = initialExperience?.id ? "UPDATED" : "PUBLISHED";
+                const actionWord = initialExperience?.id ? "updated" : "initialized";
+                toast.success(`EXPERIENCE ${actionText}`, `Node '${role.toUpperCase()}' safely ${actionWord}.`);
+
+                if (!initialExperience?.id) {
+                    setRole(""); setPeriode(""); setYearBackground(""); setDescription(""); setTechInput("");
+                }
 
                 if (onSuccessCallback) {
                     await onSuccessCallback();
                 }
             } else {
-                toast.error("DEPLOYMENT FAILED", response.error);
+                toast.error(initialExperience?.id ? "UPDATE FAILED" : "DEPLOYMENT FAILED", response.error || "Unknown error");
             }
         } catch (error: any) {
             toast.error("RUNTIME FAILURE", error.message);

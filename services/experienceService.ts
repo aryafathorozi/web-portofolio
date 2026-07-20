@@ -60,3 +60,55 @@ export async function createExperience(formData: FormData): Promise<ActionRespon
         return { success: false, error: err.message || "Internal Server Error" };
     }
 }
+
+export async function updateExperience(id: string, formData: FormData): Promise<ActionResponse> {
+    try {
+        const role = formData.get('role') as string;
+        const periode = formData.get('periode') as string;
+        const yearBackground = formData.get('year_background') as string;
+        const description = formData.get('description') as string;
+        const techStack = formData.get('tech_stack') as string;
+
+        const techStackArray = techStack
+            ? techStack.split(',').map(item => item.trim()).filter(item => item !== "")
+            : [];
+
+        const updatedExperience: Partial<ExperienceEntity> = {
+            role,
+            periode,
+            year_background: yearBackground,
+            description,
+            tech_stack: techStackArray
+        };
+
+        const { data: experienceData, error: dbError } = await supabaseServer
+            .from('experiences')
+            .update(updatedExperience)
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (dbError) return { success: false, error: `Database Error: ${dbError.message}` };
+
+        revalidatePath('/admin/experience');
+        return { success: true, data: experienceData };
+    } catch (err: any) {
+        return { success: false, error: err.message || "Internal Server Error" };
+    }
+}
+
+export async function deleteExperience(id: string): Promise<ActionResponse> {
+    try {
+        const { error: dbError } = await supabaseServer
+            .from('experiences')
+            .delete()
+            .eq('id', id);
+
+        if (dbError) return { success: false, error: `Database Error: ${dbError.message}` };
+
+        revalidatePath('/admin/experience');
+        return { success: true };
+    } catch (err: any) {
+        return { success: false, error: err.message || "Internal Server Error" };
+    }
+}
