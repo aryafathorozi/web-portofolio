@@ -4,78 +4,74 @@ import { useState, useEffect } from "react";
 import { AnimatePresence } from "framer-motion";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import ProjectCard, { ProjectItem } from "./ProjectCard";
+import { getAllProjects } from "@/services/projectService";
 import ProjectModal from "./ProjectModal";
 
 export default function ProjectsSection() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedProject, setSelectedProject] = useState<ProjectItem | null>(null);
-
-  const projects: ProjectItem[] = [
-    {
-      id: 1,
-      title: "REKAP ABSENSI DIGITAL & HRIS",
-      status: "COMPLETED",
-      statusColor: "text-emerald-400 ring-emerald-500/30 bg-emerald-500/10",
-      description: "Automated digital attendance calculations, shift scheduling logic, multi-level approval workflows, and automated PDF report generation.",
-      fullDescription:
-        "An advanced, comprehensive Human Resource Information System engineered to handle complex enterprise operational workflows. Implements real-time digital attendance tracking via precise geo-location boundaries, high-flexibility operational shift rotation scheduling matrices, multi-tiered hierarchy management approval structures, and automated daily-to-monthly cryptographic PDF rekap report generation built for standard auditing workflows.",
-      tags: ["LARAVEL", "POSTGRESQL", "TAILWIND CSS", "TCPDF MODULE"],
-      imageSrc: "/images/project-nova.jpg",
-      link: "#",
-    },
-    {
-      id: 2,
-      title: "SHARIA COOPERATIVE ACCOUNTING",
-      status: "COMPLETED",
-      statusColor: "text-emerald-400 ring-emerald-500/30 bg-emerald-500/10",
-      description: "Financial management modules for Sharia cooperatives, focusing on automated ledger entries, balance sheets, and SHU distribution logic.",
-      fullDescription:
-        "Custom-tailored sharia banking and cooperative core platform focused on strict automated microfinance ledger compliance. Features zero-delay automated journal balancing logs, automated real-time dynamic balance sheets, granular multi-account profit/loss reports, and complex automated Sisa Hasil Usaha (SHU) logic arrays distributed symmetrically based on member contribution shares.",
-      tags: ["PHP", "MYSQL", "BOOTSTRAP 5", "DATATABLES CORE"],
-      imageSrc: "/images/project-neo.jpg",
-      link: "#",
-    },
-    {
-      id: 3,
-      title: "GATEWAY INTEGRATION ENGINE",
-      status: "COMPLETED",
-      statusColor: "text-emerald-400 ring-emerald-500/30 bg-emerald-500/10",
-      description: "Payment integration core built to handle high-frequency webhooks, automated callbacks, and direct disbursements using Midtrans and Duitku.",
-      fullDescription:
-        "A bulletproof web service core built to handle high-concurrency payment streams with automated asynchronous transaction validation pipelines. Features secure multi-tenant API token hashing systems, instantaneous webhook handler execution blocks with fallback retry logic, and programmatic multi-channel direct disbursement nodes integrating Midtrans (Snap, Pop, Iris) and Duitku engine parameters.",
-      tags: ["NEXT.JS", "NODE.JS", "MIDTRANS API", "DUITKU SDK"],
-      imageSrc: "/images/project-aether.jpg",
-      link: "#",
-    },
-    {
-      id: 4,
-      title: "TOUR & TRAVEL PORTFOLIO",
-      status: "IN PROGRESS",
-      statusColor: "text-purple-400 ring-purple-500/30 bg-purple-500/10",
-      description: "A highly interactive destination portfolio website featuring multi-route itinerary planning and performance-optimized asset loading.",
-      fullDescription:
-        "A highly immersive presentation platform designed for tourist hubs and cross-border itinerary handling. Delivers high-performance asset loading chains utilizing advanced edge caching, a dynamic multi-day trip route construction module, responsive booking configuration pathways, and silky-smooth layout transitions optimized across all screen formats.",
-      tags: ["NEXT.JS", "REACT 18", "FRAMER MOTION", "TAILWIND CSS"],
-      imageSrc: "/images/project-travel.jpg",
-      link: "#",
-    },
-  ];
+  const [projects, setProjects] = useState<ProjectItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (selectedProject) return;
+    async function fetchProjects() {
+      try {
+        const data = await getAllProjects();
+        const mappedProjects: ProjectItem[] = data.map((item) => {
+          const status = item.status?.toUpperCase() || "COMPLETED";
+          let statusColor = "text-blue-400 ring-blue-500/30 bg-blue-500/10";
+          if (status === "COMPLETED") statusColor = "text-emerald-400 ring-emerald-500/30 bg-emerald-500/10";
+          else if (status === "IN PROGRESS") statusColor = "text-purple-400 ring-purple-500/30 bg-purple-500/10";
+
+          return {
+            id: item.id || Math.random().toString(),
+            title: item.title,
+            status: item.status,
+            statusColor: statusColor,
+            description: item.description,
+            fullDescription: item.full_description,
+            tags: Array.isArray(item.tech_stack) ? item.tech_stack : [],
+            imageSrc: item.image_src || "/images/placeholder.jpg",
+            link: item.link
+          };
+        });
+        setProjects(mappedProjects);
+      } catch (error) {
+        console.error("Failed to fetch projects:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchProjects();
+  }, []);
+
+  useEffect(() => {
+    if (selectedProject || projects.length === 0) return;
     const timer = setInterval(() => {
       handleNext();
     }, 5000);
     return () => clearInterval(timer);
-  }, [currentIndex, selectedProject]);
+  }, [currentIndex, selectedProject, projects]);
 
   const handleNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % projects.length);
+    if (projects.length > 0) {
+      setCurrentIndex((prev) => (prev + 1) % projects.length);
+    }
   };
 
   const handlePrev = () => {
-    setCurrentIndex((prev) => (prev - 1 + projects.length) % projects.length);
+    if (projects.length > 0) {
+      setCurrentIndex((prev) => (prev - 1 + projects.length) % projects.length);
+    }
   };
+
+  if (loading) {
+    return (
+      <section id="project" className="container mx-auto px-4 py-24 relative z-10 overflow-hidden flex items-center justify-center min-h-[800px]">
+        <div className="text-cyan-400 animate-pulse font-mono tracking-widest text-sm">LOADING PROJECTS...</div>
+      </section>
+    );
+  }
 
   return (
     <section id="project" className="container mx-auto px-4 py-24 relative z-10 overflow-hidden">
