@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { X, Cpu, Layers, CheckCircle2, ExternalLink, Terminal, Code2 } from "lucide-react";
 import Image from "next/image";
@@ -11,6 +12,14 @@ interface ProjectModalProps {
 }
 
 export default function ProjectModal({ project, onClose }: ProjectModalProps) {
+  useEffect(() => {
+    // Prevent scrolling on the background when modal is open
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, []);
+
   if (!project) return null;
 
   return (

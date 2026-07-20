@@ -5,9 +5,9 @@ import Image from "next/image";
 import { ExternalLink } from "lucide-react";
 
 export interface ProjectItem {
-  id: number;
+  id: string;
   title: string;
-  status: "COMPLETED" | "IN PROGRESS";
+  status: string;
   statusColor: string;
   description: string;
   fullDescription?: string;
