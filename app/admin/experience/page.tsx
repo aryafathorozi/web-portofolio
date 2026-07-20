@@ -4,10 +4,12 @@ import { useEffect, useState } from "react";
 import { Briefcase, Plus, Trash2, Edit3, Calendar, Layers, Terminal, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
 import { useExperienceForm } from "@/hooks/useExperienceForm";
 import SkeletonLoader from "@/components/admin/SkeletonLoader";
+import DeleteExperienceConfirmModal from "@/components/admin/DeleteExperienceConfirmModal";
 
 // supabase
 import { ExperienceEntity } from "@/types/database.types";
-import { getAllExperiences } from "@/services/experienceService";
+import { getAllExperiences, deleteExperience } from "@/services/experienceService";
+import { toast } from "@/services/toastService";
 
 const getTechArray = (rawTech: any): string[] => {
   if (!rawTech) return [];
@@ -36,11 +38,11 @@ export default function AdminExperiencePage() {
   const [loading, setLoading] = useState(true);
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const [role, setRole] = useState("");
-  const [period, setPeriod] = useState("");
-  const [description, setDescription] = useState("");
-  const [tagsInput, setTagsInput] = useState("");
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingExperience, setEditingExperience] = useState<ExperienceEntity | null>(null);
+
+  const [experienceToDelete, setExperienceToDelete] = useState<ExperienceEntity | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchExperiences = async () => {
     setLoading(true);
@@ -58,20 +60,33 @@ export default function AdminExperiencePage() {
     fetchExperiences();
   }, []);
 
-  const { states, setters, refs, handlers } = useExperienceForm(fetchExperiences);
+  const { states, setters, refs, handlers } = useExperienceForm(editingExperience, async () => {
+    await fetchExperiences();
+    setEditingExperience(null);
+  });
+  
   const visibleExperiences = isExpanded ? experiences : experiences.slice(0, 2);
 
-  const startEdit = (item: ExperienceItem) => {
-    setEditingId(item.id);
-    setRole(item.role);
-    setPeriod(item.period);
-    setDescription(item.description);
-    setTagsInput(item.tags.join(", "));
+  const openDeleteModal = (exp: ExperienceEntity) => {
+    setExperienceToDelete(exp);
+    setIsDeleteModalOpen(true);
   };
 
-  const handleDelete = (id: string) => {
-    if (confirm("Purge this record?")) {
-      setExperiences(experiences.filter((exp) => exp.id !== id));
+  const handleDelete = async (id: string) => {
+    setIsDeleting(true);
+    try {
+        const res = await deleteExperience(id);
+        if (res.success) {
+            toast.success("EXPERIENCE DELETED", "Timeline node successfully purged from database.");
+            setExperiences(experiences.filter((exp) => exp.id !== id));
+            setIsDeleteModalOpen(false);
+        } else {
+            toast.error("DELETE FAILED", res.error || "Unknown error occurred.");
+        }
+    } catch (error: any) {
+        toast.error("RUNTIME ERROR", error.message);
+    } finally {
+        setIsDeleting(false);
     }
   };
 
@@ -108,7 +123,7 @@ export default function AdminExperiencePage() {
             <div className="flex items-center gap-2 border-b border-white/5 pb-4">
               <Briefcase className="text-blue-400" size={18} />
               <div>
-                <h3 className="font-mono text-xs uppercase tracking-widest text-white font-bold">{typeof editingId !== "undefined" && editingId ? "Modify Record" : "Initialize Record"}</h3>
+                <h3 className="font-mono text-xs uppercase tracking-widest text-white font-bold">{editingExperience ? "Modify Record" : "Initialize Record"}</h3>
                 <p className="font-mono text-[9px] text-gray-500">Inject career parameters node</p>
               </div>
             </div>
@@ -211,16 +226,11 @@ export default function AdminExperiencePage() {
 
             {/* Form Footer Action Buttons */}
             <div className="pt-2 flex gap-2">
-              {typeof editingId !== "undefined" && editingId && (
+              {editingExperience && (
                 <button
                   type="button"
                   onClick={() => {
-                    if (typeof setEditingId === "function") setEditingId(null);
-                    setters.setRole("");
-                    setters.setPeriode("");
-                    setters.setYearBackground("");
-                    setters.setDescription("");
-                    setters.setTechInput("");
+                    setEditingExperience(null);
                   }}
                   className="px-4 rounded-xl bg-white/5 border border-white/10 text-gray-400 font-mono text-xs hover:text-white transition-all"
                 >
@@ -238,7 +248,7 @@ export default function AdminExperiencePage() {
                   </>
                 ) : (
                   <>
-                    <Plus size={14} /> {typeof editingId !== "undefined" && editingId ? "SAVE MODIFICATION" : "PUBLISH TIMELINE NODE"}
+                    <Plus size={14} /> {editingExperience ? "SAVE MODIFICATION" : "PUBLISH TIMELINE NODE"}
                   </>
                 )}
               </button>
@@ -288,18 +298,20 @@ export default function AdminExperiencePage() {
                     </div>
 
                     <div className="flex items-center gap-2 self-end md:self-start relative z-10">
-                      {/* <button
-                        onClick={() => startEdit(exp)}
+                      <button
+                        onClick={() => setEditingExperience(exp)}
                         className="p-2.5 rounded-xl border border-white/5 bg-[#070d19]/60 text-gray-400 hover:text-blue-400 hover:border-blue-500/30 transition-all duration-200"
+                        title="Update Data Workspace"
                       >
                         <Edit3 size={13} />
                       </button>
                       <button
-                        onClick={() => handleDelete(exp.id)}
+                        onClick={() => openDeleteModal(exp)}
                         className="p-2.5 rounded-xl border border-white/5 bg-[#070d19]/60 text-gray-400 hover:text-rose-400 hover:border-rose-500/30 transition-all duration-200"
+                        title="Purge From Database"
                       >
                         <Trash2 size={13} />
-                      </button> */}
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -327,6 +339,17 @@ export default function AdminExperiencePage() {
           )}
         </div>
       </div>
+
+      <DeleteExperienceConfirmModal
+        experience={experienceToDelete}
+        isOpen={isDeleteModalOpen}
+        isDeleting={isDeleting}
+        onClose={() => {
+            setIsDeleteModalOpen(false);
+            setExperienceToDelete(null);
+        }}
+        onConfirm={handleDelete}
+      />
     </div>
   );
 }

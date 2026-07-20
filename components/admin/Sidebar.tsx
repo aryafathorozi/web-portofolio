@@ -19,10 +19,12 @@ export default function Sidebar() {
     <aside className="w-64 bg-[#070d19]/80 backdrop-blur-xl border-r border-white/5 flex flex-col justify-between p-6 h-screen sticky top-0 z-20">
       <div className="space-y-8">
         <div className="px-2">
-          <h1 className="font-sans text-xl font-black tracking-wider text-white uppercase">
-            KAMN.<span className="bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent">DANU</span>
-          </h1>
-          <p className="font-mono text-[9px] tracking-widest text-cyan-400/80 uppercase mt-0.5">Creative Technologist</p>
+          <Link href="/" target="_blank" className="block cursor-pointer group">
+            <h1 className="font-sans text-xl font-black tracking-wider text-white uppercase transition-colors group-hover:text-cyan-50">
+              KAMN.<span className="bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent">DANU</span>
+            </h1>
+            <p className="font-mono text-[9px] tracking-widest text-cyan-400/80 uppercase mt-0.5 group-hover:text-cyan-400 transition-colors">Creative Technologist</p>
+          </Link>
         </div>
 
         <nav className="space-y-1.5">
