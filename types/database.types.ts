@@ -20,3 +20,13 @@ export interface ExperienceEntity {
     tech_stack: string[] | any[] | null;
     created_at?: string;
 }
+
+export interface CertificationEntity {
+    id?: string;
+    title: string;
+    company: string;
+    year: string;
+    link: string;
+    image_src?: string | null;
+    created_at?: string;
+}
