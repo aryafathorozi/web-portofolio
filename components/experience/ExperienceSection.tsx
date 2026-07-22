@@ -1,10 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, ChevronDown, ChevronUp } from "lucide-react";
+import { getAllExperiences } from "@/services/experienceService";
+import { ExperienceEntity } from "@/types/database.types";
 
 interface ExperienceItem {
+  id?: string;
   number: string;
   period: string;
   rolePrefix: string;
@@ -16,53 +19,34 @@ interface ExperienceItem {
 
 export default function ExperienceSection() {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [experiences, setExperiences] = useState<ExperienceItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const INITIAL_DISPLAY_COUNT = 2;
 
-  const experiences: ExperienceItem[] = [
-    {
-      number: "03.1",
-      period: "2024 — PRESENT",
-      rolePrefix: "FULL-STACK WEB DEVELOPER",
-      description: "Crafting robust web applications and integrated solutions. Managing complex relational databases, payment gateways (Midtrans/Duitku), and hospital systems with high performance.",
-      yearWatermark: "2024",
-      skills: ["Laravel 11", "Next.js", "PostgreSQL", "Tailwind CSS"],
-      isCurrent: true,
-    },
-    {
-      number: "03.2",
-      period: "2023 — 2024",
-      rolePrefix: "JUNIOR WEB DEVELOPER",
-      description: "Developed and maintained full-stack digital attendance systems, HRIS apps, and automated PDF builders using modern frameworks like Laravel and CodeIgniter.",
-      yearWatermark: "2023",
-      skills: ["CodeIgniter 4", "MySQL", "Bootstrap", "JavaScript"],
-    },
-    {
-      number: "03.3",
-      period: "2023",
-      rolePrefix: "FREELANCE WEB DEVELOPER",
-      description:
-        "Designed and engineered customized corporate portfolios, landing pages, and interactive content management systems tailored for local businesses and sharia cooperative financial tracking.",
-      yearWatermark: "2023",
-      skills: ["Laravel 10", "Vue.js", "Tailwind CSS", "MySQL"],
-    },
-    {
-      number: "03.4",
-      period: "2022",
-      rolePrefix: "WEB DEVELOPMENT INTERN",
-      description:
-        "Assisted senior developers in building internal web utilities, optimizing database indexing, and designing clean interface wireframes for multi-server synchronization architectures.",
-      yearWatermark: "2022",
-      skills: ["PHP", "CodeIgniter 3", "JavaScript", "Bootstrap 5"],
-    },
-    {
-      number: "03.5",
-      period: "2021 — 2023",
-      rolePrefix: "INFORMATICS MANAGEMENT GRADUATE",
-      description: "Graduated with A.Md.Kom. title from Politeknik Negeri Jember. Built strong fundamentals in data-driven systems, system analysis, and modular component structures.",
-      yearWatermark: "2021",
-      skills: ["PHP Core", "MySQL", "HTML5 & CSS3", "Git & GitHub"],
-    },
-  ];
+  useEffect(() => {
+    const fetchExperiences = async () => {
+      try {
+        const data = await getAllExperiences();
+        const formattedData: ExperienceItem[] = data.map((exp, index) => ({
+          id: exp.id,
+          number: `03.${index + 1}`,
+          period: exp.periode,
+          rolePrefix: exp.role,
+          description: exp.description,
+          yearWatermark: exp.year_background || "",
+          skills: Array.isArray(exp.tech_stack) ? exp.tech_stack : typeof exp.tech_stack === "string" ? JSON.parse(exp.tech_stack) : [],
+          isCurrent: index === 0,
+        }));
+        setExperiences(formattedData);
+      } catch (error) {
+        console.error("Failed to fetch experiences:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchExperiences();
+  }, []);
 
   const primaryExperiences = experiences.slice(0, INITIAL_DISPLAY_COUNT);
   const secondaryExperiences = experiences.slice(INITIAL_DISPLAY_COUNT);
@@ -82,9 +66,15 @@ export default function ExperienceSection() {
         <div className="absolute left-0 top-2 bottom-2 w-[2px] bg-gradient-to-b from-blue-500 via-purple-500 to-transparent opacity-50 shadow-[0_0_15px_rgba(59,130,246,0.3)]" />
 
         <div className="space-y-12">
-          {primaryExperiences.map((exp) => (
-            <ExperienceCard key={exp.number} exp={exp} />
-          ))}
+          {isLoading ? (
+            <div className="flex justify-center py-12">
+              <div className="w-8 h-8 rounded-full border-2 border-cyan-500/30 border-t-cyan-400 animate-spin" />
+            </div>
+          ) : (
+            primaryExperiences.map((exp) => (
+              <ExperienceCard key={exp.id || exp.number} exp={exp} />
+            ))
+          )}
         </div>
 
         <div className="overflow-hidden">
@@ -102,7 +92,7 @@ export default function ExperienceSection() {
               >
                 <div className="space-y-12 pt-12 pb-2">
                   {secondaryExperiences.map((exp) => (
-                    <motion.div key={exp.number} initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 15, opacity: 0 }} transition={{ duration: 0.4, ease: smoothBezier }}>
+                    <motion.div key={exp.id || exp.number} initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 15, opacity: 0 }} transition={{ duration: 0.4, ease: smoothBezier }}>
                       <ExperienceCard exp={exp} />
                     </motion.div>
                   ))}

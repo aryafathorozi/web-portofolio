@@ -1,15 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Award, ExternalLink, ShieldCheck, ChevronDown, ChevronUp } from "lucide-react";
 import Image from "next/image";
+import { getAllCertifications } from "@/services/certificationService";
+import { CertificationEntity } from "@/types/database.types";
 
 // Kurva Bezier Kustom untuk transisi ekstra smooth
 const smoothBezier = [0.22, 1, 0.36, 1] as const;
 
 interface CertificationItem {
-  id: number;
+  id: string;
   title: string;
   issuer: string;
   year: string;
@@ -18,57 +20,44 @@ interface CertificationItem {
   link?: string;
 }
 
+const BADGE_COLORS = [
+  "text-blue-400 ring-blue-500/30 bg-blue-500/10",
+  "text-cyan-400 ring-cyan-500/30 bg-cyan-500/10",
+  "text-amber-400 ring-amber-500/30 bg-amber-500/10",
+  "text-red-400 ring-red-500/30 bg-red-500/10",
+  "text-purple-400 ring-purple-500/30 bg-purple-500/10",
+  "text-emerald-400 ring-emerald-500/30 bg-emerald-500/10",
+];
+
 export default function CertificationSection() {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [certifications, setCertifications] = useState<CertificationItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const INITIAL_DISPLAY_COUNT = 3;
 
-  const certifications: CertificationItem[] = [
-    {
-      id: 1,
-      title: "META FRONT-END DEVELOPER",
-      issuer: "META",
-      year: "2023",
-      imageSrc: "/images/cert-meta.jpg",
-      badgeColor: "text-blue-400 ring-blue-500/30 bg-blue-500/10",
-      link: "#",
-    },
-    {
-      id: 2,
-      title: "CLOUD DIGITAL LEADER",
-      issuer: "GOOGLE CLOUD",
-      year: "2023",
-      imageSrc: "/images/cert-gcp.jpg",
-      badgeColor: "text-cyan-400 ring-cyan-500/30 bg-cyan-500/10",
-      link: "#",
-    },
-    {
-      id: 3,
-      title: "AWS CERTIFIED DEVELOPER",
-      issuer: "AMAZON WEB SERVICES",
-      year: "2022",
-      imageSrc: "/images/cert-aws.jpg",
-      badgeColor: "text-amber-400 ring-amber-500/30 bg-amber-500/10",
-      link: "#",
-    },
-    {
-      id: 4,
-      title: "GOOGLE UX DESIGN PROFESSIONAL",
-      issuer: "GOOGLE",
-      year: "2024",
-      imageSrc: "/images/cert-ux.jpg",
-      badgeColor: "text-blue-400 ring-blue-500/30 bg-blue-500/10",
-      link: "#",
-    },
-    {
-      id: 5,
-      title: "LARAVEL CERTIFIED DEVELOPER",
-      issuer: "LARAVEL LLC",
-      year: "2025",
-      imageSrc: "/images/cert-laravel.jpg",
-      badgeColor: "text-red-400 ring-red-500/30 bg-red-500/10",
-      link: "#",
-    },
-  ];
+  useEffect(() => {
+    const fetchCertifications = async () => {
+      try {
+        const data = await getAllCertifications();
+        const formattedData: CertificationItem[] = data.map((cert, index) => ({
+          id: cert.id || index.toString(),
+          title: cert.title,
+          issuer: cert.company,
+          year: cert.year,
+          imageSrc: cert.image_src || "/images/cert-meta.jpg",
+          badgeColor: BADGE_COLORS[index % BADGE_COLORS.length],
+          link: cert.link,
+        }));
+        setCertifications(formattedData);
+      } catch (error) {
+        console.error("Failed to fetch certifications:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCertifications();
+  }, []);
 
   const primaryCertifications = certifications.slice(0, INITIAL_DISPLAY_COUNT);
   const secondaryCertifications = certifications.slice(INITIAL_DISPLAY_COUNT);
@@ -89,9 +78,15 @@ export default function CertificationSection() {
       <div className="max-w-5xl mx-auto">
         {/* BARIS UTAMA: Selalu Tampil (Menampilkan 3 Card Pertama) */}
         <div className="flex flex-wrap justify-center gap-6 p-1">
-          {primaryCertifications.map((cert) => (
-            <CertificationCard key={cert.id} cert={cert} />
-          ))}
+          {isLoading ? (
+            <div className="w-full flex justify-center py-12">
+              <div className="w-8 h-8 rounded-full border-2 border-cyan-500/30 border-t-cyan-400 animate-spin" />
+            </div>
+          ) : (
+            primaryCertifications.map((cert) => (
+              <CertificationCard key={cert.id} cert={cert} />
+            ))
+          )}
         </div>
 
         {/* CONTAINER AKORDEON: Mengikuti Alur Struktur Modul Experience */}
@@ -160,12 +155,10 @@ function CertificationCard({ cert, isSecondary = false }: { cert: CertificationI
       <div>
         {/* CONTAINER MEDIA IMAGE */}
         <div className="relative w-full h-44 rounded-xl overflow-hidden mb-5 bg-[#040a16] border border-white/5 flex items-center justify-center">
-          <Image
+          <img
             src={cert.imageSrc}
             alt={cert.title}
-            fill
-            sizes="(max-w-768px) 100vw, 33vw"
-            className="object-cover opacity-60 group-hover:opacity-80 group-hover:scale-105 transition-all duration-500"
+            className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-80 group-hover:scale-105 transition-all duration-500"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#081122]/80 via-transparent to-transparent opacity-80" />
 
