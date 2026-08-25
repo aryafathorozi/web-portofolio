@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Award, ExternalLink, ShieldCheck, ChevronDown, ChevronUp } from "lucide-react";
+import { Award, ExternalLink, ShieldCheck, ChevronDown, ChevronUp, X } from "lucide-react";
 import Image from "next/image";
 import { getAllCertifications } from "@/services/certificationService";
 import { CertificationEntity } from "@/types/database.types";
@@ -33,6 +34,7 @@ export default function CertificationSection() {
   const [isExpanded, setIsExpanded] = useState(false);
   const [certifications, setCertifications] = useState<CertificationItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const INITIAL_DISPLAY_COUNT = 3;
 
   useEffect(() => {
@@ -84,7 +86,7 @@ export default function CertificationSection() {
             </div>
           ) : (
             primaryCertifications.map((cert) => (
-              <CertificationCard key={cert.id} cert={cert} />
+              <CertificationCard key={cert.id} cert={cert} onImageClick={setSelectedImage} />
             ))
           )}
         </div>
@@ -114,7 +116,7 @@ export default function CertificationSection() {
                       transition={{ duration: 0.4, ease: smoothBezier }}
                       className="w-full md:w-[calc(33.333%-16px)] min-w-[300px]"
                     >
-                      <CertificationCard cert={cert} isSecondary={true} />
+                      <CertificationCard cert={cert} isSecondary={true} onImageClick={setSelectedImage} />
                     </motion.div>
                   ))}
                 </div>
@@ -144,28 +146,35 @@ export default function CertificationSection() {
           </div>
         )}
       </div>
+
+      <AnimatePresence>
+        {selectedImage && <ImageModal imageSrc={selectedImage} onClose={() => setSelectedImage(null)} />}
+      </AnimatePresence>
     </section>
   );
 }
 
 // Sub-Komponen Card untuk Menjaga Kebersihan Kode Utama
-function CertificationCard({ cert, isSecondary = false }: { cert: CertificationItem; isSecondary?: boolean }) {
+function CertificationCard({ cert, isSecondary = false, onImageClick }: { cert: CertificationItem; isSecondary?: boolean; onImageClick: (src: string) => void }) {
   const cardBody = (
     <div className="group relative overflow-hidden rounded-2xl p-5 bg-[#081122]/40 ring-1 ring-white/5 backdrop-blur-md flex flex-col justify-between h-full transition-all duration-300 hover:ring-cyan-500/30 hover:bg-[#09152a]/50 hover:shadow-2xl hover:shadow-cyan-500/5">
       <div>
         {/* CONTAINER MEDIA IMAGE */}
-        <div className="relative w-full h-44 rounded-xl overflow-hidden mb-5 bg-[#040a16] border border-white/5 flex items-center justify-center">
+        <div 
+          className="relative w-full h-44 rounded-xl overflow-hidden mb-5 bg-[#040a16] border border-white/5 flex items-center justify-center cursor-pointer"
+          onClick={() => onImageClick(cert.imageSrc)}
+        >
           <img
             src={cert.imageSrc}
             alt={cert.title}
             className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-80 group-hover:scale-105 transition-all duration-500"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#081122]/80 via-transparent to-transparent opacity-80" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#081122]/80 via-transparent to-transparent opacity-80 pointer-events-none" />
 
           {/* HOVER ACCENT ELEMENT */}
-          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/30 backdrop-blur-[2px]">
-            <div className="p-3 rounded-full bg-white/10 border border-white/20 text-white shadow-xl">
-              <Award size={20} />
+          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/30 backdrop-blur-[2px] pointer-events-none">
+            <div className="p-3 rounded-full bg-white/10 border border-white/20 text-white shadow-xl flex items-center gap-2 text-xs font-mono font-bold tracking-wider">
+              <Award size={16} /> VIEW
             </div>
           </div>
         </div>
@@ -200,4 +209,55 @@ function CertificationCard({ cert, isSecondary = false }: { cert: CertificationI
   if (isSecondary) return cardBody;
 
   return <div className="w-full md:w-[calc(33.333%-16px)] min-w-[300px]">{cardBody}</div>;
+}
+
+// Modal Component for Full Image Preview
+function ImageModal({ imageSrc, onClose }: { imageSrc: string; onClose: () => void }) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, []);
+
+  if (!mounted) return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 md:p-8 overflow-hidden">
+      <motion.div 
+        initial={{ opacity: 0 }} 
+        animate={{ opacity: 1 }} 
+        exit={{ opacity: 0 }} 
+        onClick={onClose} 
+        className="fixed inset-0 bg-black/90 backdrop-blur-md cursor-pointer" 
+      />
+      
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        transition={{ type: "spring", damping: 25, stiffness: 300 }}
+        className="relative w-full max-w-6xl flex flex-col items-center justify-center z-10 pointer-events-none h-full"
+      >
+        <div className="relative w-full h-[85vh] flex items-center justify-center pointer-events-auto">
+          <button
+            onClick={onClose}
+            className="absolute top-0 right-0 md:-top-4 md:-right-4 z-50 p-2.5 rounded-full bg-black/60 border border-white/20 text-gray-300 hover:text-white hover:bg-white/20 transition-all shadow-xl hover:rotate-90"
+          >
+            <X size={20} />
+          </button>
+          <img 
+            src={imageSrc} 
+            alt="Certificate Full View" 
+            className="w-auto h-auto max-w-full max-h-full object-contain rounded-xl shadow-2xl ring-1 ring-white/10 select-none"
+            draggable={false}
+          />
+        </div>
+      </motion.div>
+    </div>,
+    document.body
+  );
 }
