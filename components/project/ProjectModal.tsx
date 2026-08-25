@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
 import { X, Cpu, Layers, CheckCircle2, ExternalLink, Terminal, Code2 } from "lucide-react";
 import Image from "next/image";
@@ -12,7 +13,10 @@ interface ProjectModalProps {
 }
 
 export default function ProjectModal({ project, onClose }: ProjectModalProps) {
+  const [mounted, setMounted] = useState(false);
+
   useEffect(() => {
+    setMounted(true);
     // Prevent scrolling on the background when modal is open
     document.body.style.overflow = "hidden";
     return () => {
@@ -20,17 +24,17 @@ export default function ProjectModal({ project, onClose }: ProjectModalProps) {
     };
   }, []);
 
-  if (!project) return null;
+  if (!project || !mounted) return null;
 
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-10 overflow-y-auto">
+  return createPortal(
+    <div className="fixed inset-0 z-[40] md:z-[100] flex items-center justify-center p-4 md:p-10 overflow-y-auto">
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="fixed inset-0 bg-black/90 backdrop-blur-2xl" />
       <motion.div
         initial={{ opacity: 0, scale: 0.95, y: 30 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 30 }}
         transition={{ type: "spring", damping: 28, stiffness: 200 }}
-        className="relative w-full max-w-5xl rounded-3xl bg-[#050c18] border border-white/10 shadow-[0_0_80px_rgba(0,0,0,0.8)] overflow-hidden z-10 flex flex-col lg:flex-row my-auto max-h-[90vh] lg:max-h-none overflow-y-auto lg:overflow-visible"
+        className="relative w-full max-w-5xl rounded-3xl bg-[#050c18] border border-white/10 shadow-[0_0_80px_rgba(0,0,0,0.8)] overflow-hidden z-10 flex flex-col lg:flex-row my-auto max-h-[calc(100dvh-180px)] md:max-h-[90vh] lg:max-h-none overflow-y-auto lg:overflow-visible"
       >
         <div className="absolute top-[-100px] left-[-100px] w-80 h-80 bg-cyan-500/10 rounded-full blur-[100px] pointer-events-none mix-blend-screen" />
         <div className="absolute bottom-[-100px] right-[-100px] w-80 h-80 bg-blue-500/10 rounded-full blur-[100px] pointer-events-none mix-blend-screen" />
@@ -104,6 +108,7 @@ export default function ProjectModal({ project, onClose }: ProjectModalProps) {
           </div>
         </div>
       </motion.div>
-    </div>
+    </div>,
+    document.body
   );
 }

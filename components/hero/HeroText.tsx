@@ -67,7 +67,7 @@ export default function HeroText() {
         <motion.a
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.98 }}
-          href="#contact"
+          href="#about"
           className="inline-flex items-center gap-2.5 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-3.5 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition duration-200"
         >
           View More <ArrowRight size={16} />

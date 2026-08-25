@@ -11,6 +11,8 @@ import ProjectsSection from "@/components/project/ProjectsSection";
 import BackgroundAnimation from "@/components/background/BackgroundAnimation";
 import CertificationSection from "@/components/certification/CertificationSection";
 
+import Preloader from "@/components/ui/Preloader";
+
 export default function Page() {
   const activeSection = useActiveSection(["home", "about", "experience", "techstack", "project", "certification"]);
 
@@ -25,6 +27,7 @@ export default function Page() {
 
   return (
     <div className="relative min-h-screen bg-[#030712] text-white overflow-x-hidden selection:bg-blue-600 selection:text-white">
+      <Preloader />
       <BackgroundAnimation />
 
       <header className="fixed top-0 left-0 right-0 z-50 bg-[#030712]/60 backdrop-blur-md border-b border-white/5 transition-all duration-300">
@@ -107,7 +110,7 @@ export default function Page() {
               </a>
             ))}
           </div>
-          <p className="text-[10px] text-gray-500 font-mono tracking-widest text-center sm:text-right uppercase">YES! THINK CREATIVELY & MAKE YOUR OWN IDEA.</p>
+          <p className="text-[10px] text-gray-500 font-mono tracking-widest text-center sm:text-right uppercase">@copyright 2026 KAMN.DANU</p>
         </div>
       </div>
     </div>
