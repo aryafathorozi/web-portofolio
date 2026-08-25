@@ -46,11 +46,11 @@ export default function Preloader() {
         <motion.div
           key="preloader"
           className="fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-[#030712] overflow-hidden"
-          initial={{ clipPath: "inset(0% 0% 0% 0%)" }}
-          // Elevator door opening effect (vertically splitting from center)
+          initial={{ opacity: 1, scale: 1 }}
           exit={{ 
-            clipPath: "inset(50% 0% 50% 0%)", 
-            transition: { duration: 1.2, ease: [0.77, 0, 0.175, 1], delay: 0.3 } 
+            opacity: 0,
+            scale: 1.05,
+            transition: { duration: 1.2, ease: [0.45, 0, 0.55, 1], delay: 0.3 } 
           }}
         >
           {/* Ambient Glowing Orbs */}
