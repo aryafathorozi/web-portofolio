@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LayoutDashboard, Briefcase, GraduationCap, Code2, Settings, LogOut } from "lucide-react";
+import { logout } from "@/app/actions/auth";
 
 const menuItems = [
   { name: "Overview", href: "/admin", icon: LayoutDashboard },
@@ -47,10 +48,12 @@ export default function Sidebar() {
         </nav>
       </div>
 
-      <button className="flex items-center gap-3 px-4 py-3 rounded-xl font-mono text-xs tracking-wide text-gray-500 hover:text-rose-400 hover:bg-rose-500/[0.02] transition-all duration-300">
-        <LogOut size={16} />
-        Logout
-      </button>
+      <form action={logout}>
+        <button type="submit" className="flex w-full items-center gap-3 px-4 py-3 rounded-xl font-mono text-xs tracking-wide text-gray-500 hover:text-rose-400 hover:bg-rose-500/[0.02] transition-all duration-300">
+          <LogOut size={16} />
+          Logout
+        </button>
+      </form>
     </aside>
   );
 }
