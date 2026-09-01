@@ -1,7 +1,11 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import { Briefcase, GraduationCap, Users, Eye, Plus, ArrowUpRight, GraduationCapIcon } from "lucide-react";
 import StatCard from "@/components/admin/StatCard";
+import { getAllProjects } from "@/services/projectService";
+import { getAllCertifications } from "@/services/certificationService";
 
 const recentActivities = [
   { id: 1, action: "Project 'AI Dashboard' updated", status: "PUBLISHED", category: "SOFTWARE", time: "2h ago" },
@@ -10,6 +14,29 @@ const recentActivities = [
 ];
 
 export default function AdminDashboard() {
+  const [totalProjects, setTotalProjects] = useState<number>(0);
+  const [totalCertifications, setTotalCertifications] = useState<number>(0);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const [projects, certifications] = await Promise.all([
+          getAllProjects(),
+          getAllCertifications()
+        ]);
+        setTotalProjects(projects.length);
+        setTotalCertifications(certifications.length);
+      } catch (error) {
+        console.error("Failed to fetch dashboard data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
   return (
     <div className="space-y-8 animate-fade-in">
       <div
@@ -50,8 +77,8 @@ export default function AdminDashboard() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-        <StatCard title="Total Projects" value={12} badge="+12%" Icon={Briefcase} />
-        <StatCard title="Certifications" value={8} badge="NEW" Icon={GraduationCap} />
+        <StatCard title="Total Projects" value={isLoading ? "..." : totalProjects} badge="+12%" Icon={Briefcase} />
+        <StatCard title="Certifications" value={isLoading ? "..." : totalCertifications} badge="NEW" Icon={GraduationCap} />
         <StatCard title="Total Visitors" value="2.4k" badge="+2.4k" Icon={Users} />
         <StatCard title="Profile Views" value={850} badge="STABLE" Icon={Eye} />
       </div>
@@ -87,31 +114,31 @@ export default function AdminDashboard() {
           <h4 className="font-mono text-xs uppercase tracking-widest text-white font-bold px-1">Quick Actions</h4>
 
           {/* Action 1: Upload New Project */}
-          <button className="w-full flex items-center justify-between p-4 rounded-xl bg-[#070d19]/40 border border-white/5 hover:border-cyan-500/30 font-mono text-xs text-left text-gray-300 hover:text-white transition-all group">
+          <Link href="/admin/projects" className="w-full flex items-center justify-between p-4 rounded-xl bg-[#070d19]/40 border border-white/5 hover:border-cyan-500/30 font-mono text-xs text-left text-gray-300 hover:text-white transition-all group">
             <div className="flex items-center gap-3">
               <Plus size={16} className="text-cyan-400" />
               Upload New Project
             </div>
             <ArrowUpRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          </button>
+          </Link>
 
           {/* Action 2: Upload New Certificate (BARU) */}
-          <button className="w-full flex items-center justify-between p-4 rounded-xl bg-[#070d19]/40 border border-white/5 hover:border-blue-500/30 font-mono text-xs text-left text-gray-300 hover:text-white transition-all group">
+          <Link href="/admin/certifications" className="w-full flex items-center justify-between p-4 rounded-xl bg-[#070d19]/40 border border-white/5 hover:border-blue-500/30 font-mono text-xs text-left text-gray-300 hover:text-white transition-all group">
             <div className="flex items-center gap-3">
               <GraduationCapIcon size={16} className="text-blue-400 group-hover:text-cyan-400 transition-colors duration-300" />
               Upload New Certificate
             </div>
             <ArrowUpRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          </button>
+          </Link>
 
-          {/* Action 3: Update About Me */}
-          <button className="w-full flex items-center justify-between p-4 rounded-xl bg-[#070d19]/40 border border-white/5 hover:border-purple-500/30 font-mono text-xs text-left text-gray-300 hover:text-white transition-all group">
+          {/* Action 3: Add New Experience */}
+          <Link href="/admin/experience" className="w-full flex items-center justify-between p-4 rounded-xl bg-[#070d19]/40 border border-white/5 hover:border-purple-500/30 font-mono text-xs text-left text-gray-300 hover:text-white transition-all group">
             <div className="flex items-center gap-3">
               <Plus size={16} className="text-purple-400" />
-              Update About Me
+              Add New Experience
             </div>
             <ArrowUpRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          </button>
+          </Link>
         </div>
       </div>
     </div>
