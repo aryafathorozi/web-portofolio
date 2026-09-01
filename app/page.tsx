@@ -10,11 +10,12 @@ import TechStackSection from "@/components/techstack/TechStackSection";
 import ProjectsSection from "@/components/project/ProjectsSection";
 import BackgroundAnimation from "@/components/background/BackgroundAnimation";
 import CertificationSection from "@/components/certification/CertificationSection";
+import ContactSection from "@/components/contact/ContactSection";
 
 import Preloader from "@/components/ui/Preloader";
 
 export default function Page() {
-  const activeSection = useActiveSection(["home", "about", "experience", "techstack", "project", "certification"]);
+  const activeSection = useActiveSection(["home", "about", "experience", "techstack", "project", "certification", "contact"]);
 
   const navItems = [
     { id: "home", label: "Home" },
@@ -93,6 +94,10 @@ export default function Page() {
 
       <div id="certification" className="relative z-10">
         <CertificationSection />
+      </div>
+
+      <div id="contact" className="relative z-10">
+        <ContactSection />
       </div>
 
       <div className="fixed bottom-0 left-0 right-0 bg-[#030712]/90 backdrop-blur-sm border-t border-white/5 py-4 z-40">
